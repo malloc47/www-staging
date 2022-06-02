@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <!-- <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> -->
+    <title>malloc47/Flirting with the Front End</title>
+    
+<meta name="keywords" content="">
+
+<meta property="og:url" content="https://www.malloc47.com/flirting-with-the-front-end/" />
+<meta property="og:title" content="Flirting with the Front End" />
+<meta property="og:type" content="article" />
+
+    <meta name="viewport" content="width=720">
+    <link rel="preload" href="/font/Existence-Light-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Regular-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Italic-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Bold-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Inconsolata-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/assets/style.css">
+    <link id="day-css" rel="stylesheet" href="/assets/night.css" disabled>
+    <link id="night-css" rel="stylesheet" href="/assets/day.css" disabled>
+    <script src="/assets/main.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <div class="icons-left">
+      <canvas id="miniclock" width="50" height="50" class="selectable"></canvas>
+      <span id="toggle" class="transparent-light toggle selectable"></span>
+    </div>
+        <div class="icons">
+      <a href="mailto:malloc47@gmail.com" class="transparent gmail"></a>
+      <a href="https://www.github.com/malloc47" class="transparent github"></a>
+    </div>
+
+    <div id="container">
+            <header id="main-header">
+	<p>malloc(<span class="header-number"><a href="/">47</a></span>)</p>
+	<p class="header-name">&mdash;<a href="https://www.twitter.com/malloc47">Jarrell Waggoner</a>&mdash;</p>
+      </header>
+
+            <nav>
+      	<ul>
+      	  <li><a href="/" title="Home">Home</a></li>
+      	  <li><a href="/about" title="About">About</a></li>
+      	  <li><a href="/music" title="Music">Music</a></li>
+      	  <li><a href="/research" title="Research">Research</a></li>
+      	  <li><a href="/talks" title="Talks">Talks</a></li>
+      	  <li><a href="mailto:malloc47@gmail.com" title="Email">Contact</a></li>
+      	</ul>
+      </nav>
+
+      <div id="contents" role="main">
+        
+<div class="content">
+  <div class="content-wrap">
+    <p class="date">2012 <span class="date-dark">00</span>03 <span class="date-dark">00</span>20 </p>
+        <p class="social">
+      <a href="https://www.facebook.com/sharer.php?u=https%3A%2F%2Fwww.malloc47.com%2Fflirting-with-the-front-end%2F&amp;t=Flirting+with+the+Front+End"
+	 target="_blank"
+	 rel="nofollow"
+	 title="Share on Facebook">F</a>
+
+      <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.malloc47.com%2Fflirting-with-the-front-end%2F&amp;text=Flirting+with+the+Front+End&amp;via=malloc47&amp;related=malloc47"
+	 target="_blank"
+	 title="Tweet"
+	 rel="nofollow">T</a>
+    </p>
+
+    <header>Flirting with the Front End</header>
+    <div class="content-body">
+      <p>Every few years, when I'm not teaching introductory web programming, I
+revisit front end development, oftentimes in the form of retooling my
+site.  Last time, it was a Wordpress-driven theme with
+cobbled-together JavaScript snippets for random bits of functionality:</p>
+<p><a href="/img/posts/flirting-with-the-front-end/old-site.png"><img src="/img/posts/flirting-with-the-front-end/thumb/old-site.jpg" alt="Old Site" width="280" height="183" /></a></p>
+<p>Serviceable, at least.</p>
+<p>Before this, I used a generic Wordpress theme, the specifics of which
+I don't recall.  Rolling back all the way to the mid-90s, I had a
+<a href="http://www.fortunecity.com">fortunecity</a> site, which was--as typical of sites in the
+90s--equal parts bland and garish:</p>
+<p><a href="/img/posts/flirting-with-the-front-end/older-site.png"><img src="/img/posts/flirting-with-the-front-end/thumb/older-site.jpg" alt="Old Site" width="280" height="210" /></a></p>
+<p>Yes, it had a Christmas theme for the title page. And yes, the header,
+navigation bar, and footer (on individual pages) are all java applets.
+Not exactly, a usability panacea.</p>
+<p>And now, I've transitioned to <a href="https://github.com/mojombo/jekyll">Jekyll</a>, for a few reasons:</p>
+<ul>
+<li>It's hard to get faster than static pages for serving content.</li>
+<li><a href="https://github.com/">Github</a> can handle more traffic than the shared hosting I was
+using previously.</li>
+<li>A Jekyll deploy on github can't use external plugins.  Which is, by
+most accounts, a downside, but it forces me to find front-end
+solutions for what I want rather than turning to the back end for
+everything.</li>
+<li>I wanted to build everything from scratch.  The limited <a href="https://shopify.github.io/liquid/">Liquid</a>
+DSL used by Jekyll is leaner than full-blown <code>PHP</code>, and more
+satisfying for building from the ground-up (all my Wordpress themes
+started from--at minimum--a skeleton theme, just to cover the
+essentials needed by Wordpress).</li>
+<li>Having everything in a git repo is both satisfying for my current
+work flow and avoids the pain of database backups.</li>
+</ul>
+<p>So <a href="https://github.com/malloc47/malloc47.github.com">here</a> it is.  I avoided <code>jQuery</code> (convenient as it is) to keep
+things lean and loading quickly, and rampantly bludgeoned the site with
+<code>HTML5/CSS3</code> without much regard for backwards compatibility.  To
+further optimize queries, I used Liquid <code>include</code>s to aggregate all
+the <code>js</code> and <code>css</code> into single files.  For <code>JavaScript</code>:</p>
+<pre><code class="javascript">---
+---
+(function () {
+    &quot;use strict&quot;;
+{{ &quot;{% include cookies.js &quot; }}%}
+{{ &quot;{% include mini-clock.js &quot; }}%}
+{{ &quot;{% include check-time.js &quot; }}%}
+{{ &quot;{% include event-handler.js &quot; }}%}
+}());
+</code></pre>
+<p>you can wrap everything with <code>&quot;use strict&quot;</code> to get some extra
+exception goodness.  Doing this may cause <a href="https://www.jslint.com/">JSLint</a> to complain
+about indentation issues, and if you don't add event handlers with
+JavaScript (e.g. you use the <code>onclick</code> or <code>onload</code> events in your
+<code>HTML</code> tags), you may run into scope issues as well.  All of this
+together provided a nearly 20-point speed bump on
+<a href="https://developers.google.com/pagespeed/">Google page speed</a>.</p>
+<p>I opted for a dual-themed site, determined by the time of day.  The
+clock drawn in the HTML5 Canvas element in the upper-left shows when
+the transition will occur, or you can override it with the icon next
+to the clock.</p>
+<p>All in all, a good transition so far.</p>
+
+    </div>
+  </div>
+      <div class="share">
+      <a href="https://twitter.com/share" class="twitter-share-button" data-via="malloc47">Tweet</a>
+    </div>
+
+</div>
+
+      </div>
+            <footer>
+	<div class="icons">
+	  <a href="/rss.xml" class="transparent rss"></a>
+	</div>
+	<div class="footer-padding">This site is licensed under <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0</a>.</div>
+      </footer>
+
+      </div>
+  </body>
+</html>

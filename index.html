@@ -1,0 +1,1656 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <!-- <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> -->
+    <title>malloc47/</title>
+    
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="author" content="Jarrell Waggoner">
+    <meta property="og:url" content="https://www.malloc47.com/" />
+    <meta property="og:title" content="malloc47" />
+    <meta property="og:type" content="article" />
+    
+    <meta name="viewport" content="width=720">
+    <link rel="preload" href="/font/Existence-Light-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Regular-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Italic-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Bold-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Inconsolata-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/assets/style.css">
+    <link id="day-css" rel="stylesheet" href="/assets/night.css" disabled>
+    <link id="night-css" rel="stylesheet" href="/assets/day.css" disabled>
+    <script src="/assets/main.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <div class="icons-left">
+      <canvas id="miniclock" width="50" height="50" class="selectable"></canvas>
+      <span id="toggle" class="transparent-light toggle selectable"></span>
+    </div>
+        <div class="icons">
+      <a href="mailto:malloc47@gmail.com" class="transparent gmail"></a>
+      <a href="https://www.github.com/malloc47" class="transparent github"></a>
+    </div>
+
+    <div id="container">
+            <header id="main-header">
+	<p>malloc(<span class="header-number"><a href="/">47</a></span>)</p>
+	<p class="header-name">&mdash;<a href="https://www.twitter.com/malloc47">Jarrell Waggoner</a>&mdash;</p>
+      </header>
+
+            <nav>
+      	<ul>
+      	  <li><a href="/" title="Home">Home</a></li>
+      	  <li><a href="/about" title="About">About</a></li>
+      	  <li><a href="/music" title="Music">Music</a></li>
+      	  <li><a href="/research" title="Research">Research</a></li>
+      	  <li><a href="/talks" title="Talks">Talks</a></li>
+      	  <li><a href="mailto:malloc47@gmail.com" title="Email">Contact</a></li>
+      	</ul>
+      </nav>
+
+      <div id="contents" role="main">
+        
+
+<div class="content">
+  <div class="content-wrap">
+    <p class="date">2021 <span class="date-dark">00</span>09 <span class="date-dark">00</span>12 </p>
+        <p class="social">
+      <a href="https://www.facebook.com/sharer.php?u=https%3A%2F%2Fwww.malloc47.com%2F&amp;t="
+	 target="_blank"
+	 rel="nofollow"
+	 title="Share on Facebook">F</a>
+      <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.malloc47.com%2F&amp;text=&amp;via=malloc47&amp;related=malloc47"
+	 target="_blank"
+	 title="Tweet"
+	 rel="nofollow">T</a>
+    </p>
+
+    <header><a href="/building-a-personal-dashboard-in-clojurescript-part-3/">Building a Personal Dashboard in ClojureScript Part 3</a></header>
+    <div class="content-body">
+      <p>My raison d'être for creating the wall-mounted dashboard discussed in
+<a href="/building-a-personal-dashboard-in-clojurescript">previous</a> <a href="/building-a-personal-dashboard-in-clojurescript-part-2">posts</a> was to
+help with timing my transit connections when leaving my NYC
+apartment. After living on my block for a few months, I had worked out
+the perfect time to step out the door to make a subway, bus, or ferry
+connection, but quickly grew tired of having to pull out my phone to
+verify the transit time. I basically wanted an equivalent of the
+<a href="https://mta.info/">MTA</a> transit time boards found in most subway stations, customized
+with my local stations.</p>
+<p>Jumping straight to a sample of the end result, I wanted a dashboard
+like this:</p>
+<a href="/img/posts/cockpit/transit.png">
+  <img src="/img/posts/cockpit/transit.png" alt="Sample transit card" width="400" />
+</a>
+<p>Building this view, however, is less simple than it sounds. A big part
+of the complexity is in finding and consuming a source for the transit
+departure times. Unlike the <a href="/building-a-personal-dashboard-in-clojurescript-part-2">weather card</a>,
+there isn't a single, free, purpose-built API to serve such
+dashboards. To deal with transit, we have to solve two main
+challenges:</p>
+<ol>
+<li>
+<p>Finding a source for the transit data we need to display on the
+dashboard.</p>
+</li>
+<li>
+<p>Consuming transit data from the above source, stitching it together
+to populate the view.</p>
+</li>
+</ol>
+<p>For narrative reasons, we'll take these points in reverse order before
+delving into the implementation.</p>
+<h1 id="consuming-transit-data">Consuming Transit Data</h1>
+<p>The most common way to address (2) is by consuming a source that
+adheres to the <a href="https://developers.google.com/transit">GTFS</a> (General Transit Feed Specification), the
+defacto standard for transit data that is published by many transit
+agencies. It has complementary <a href="https://developers.google.com/transit/gtfs">static</a> and
+<a href="https://developers.google.com/transit/gtfs-realtime">realtime</a> flavors, and we need both sources to get the
+most accurate data for our dashboard.</p>
+<p>To better understand the complexity of GTFS, this is a (very rough)
+entity relationship diagram:</p>
+<a href="/img/posts/cockpit/gtfs-erd.svg">
+  <img src="/img/posts/cockpit/gtfs-erd.svg" alt="GTFS ERD" width="600" />
+</a>
+<p>Note that there are <a href="https://web.archive.org/web/20130117174415/http://www.dft.gov.uk/transmodel/schema/doc/GoogleTransit/TransmodelForGoogle-09.pdf">other similar ERDs</a> that are
+likely better-researched but didn't fit quite as nealy into this post
+so I took a stab at creating this diagram myself. There are a few
+caveats in the image above: There are a lot of conditional
+relationships in GTFS that are not captured in this image; similarly,
+there are also a number of nested entities in the realtime spec that
+are glossed over in this diagram for simplicity.</p>
+<p>GTFS is quite normalized so there isn't an obvious self-contained
+single entity we can read that will let us drive everything in our
+dashboard.  Combing through the GTFS entities, there is a sizable
+number that are not relevant to displaying transit times at a chosen
+station. Removing entities related to fare calculation, pathing,
+language translation, station layout, and so forth, the resulting
+trimmed-down ERD looks like:</p>
+<a href="/img/posts/cockpit/gtfs-erd-small.svg">
+  <img src="/img/posts/cockpit/gtfs-erd-small.svg" alt="GTFS ERD Small" width="300" />
+</a>
+<p>This subset of the GTFS is a bit more manageable for demonstrating
+what we need to consume for our dashboard. The particular relevant
+subset might be different for other agencies (e.g., some agencies
+might rely more on <code>frequency</code>-based service or have <code>calendar</code>-based
+service changes) but this is all I needed based on the <a href="https://mta.info/">MTA</a> GTFS.</p>
+<p>Exploring this subset in more detail, the <code>agency</code> entity isn't
+strictly necessary except in cases where the feed represents multiple
+agencies. To populate the dashboard, we will identify one or more
+<code>stops</code>, use these stops to filter the <code>stop times</code> list which allows
+us to compute the arrival times at a given stop. This would be
+sufficient for our dashboard if there's a single transit line going in
+a single direction at a given stop. However, if there's multiple
+routes or directions of travel at a particular stop then we need to
+split the <code>stop times</code> into groups by direction and route to
+differentiate them. To accomplish this, we additionally look up the
+<code>trip</code> for each <code>stop time</code> which gives us information about the trip
+direction, and then walk through <code>trips</code> to <code>routes</code> which allows us
+bucket the <code>stop times</code> into groups by route.</p>
+<p>So far, we've only touched the entities in the static GTFS, which is
+sufficient if the agency consistency runs on time (🤣). To bring the
+prescheduled <code>stop times</code> into alignment with reality, we read the
+<code>trip updates</code> Realtime source and (hand-waving a lot here) update the
+<code>stop times</code> with these realtime updates at a reasonable interval.</p>
+<p>At a high-level, this is our roadmap for reading the subset of the
+GTFS that we need for this dashboard.</p>
+<h1 id="serving-transit-data">Serving Transit Data</h1>
+<p>Stepping backwards to address point (1) above, we need to talk about
+how we physically convey GTFS data into our web application. The
+static portion of the GTFS is a zip file containing <code>.txt</code> files
+(effectively CSV formatted)--not impossible to download directly from
+the transit agency into a web application with the right
+<a href="https://gildas-lormeau.github.io/zip.js/">decompression</a> and <a href="https://www.papaparse.com/">parsing</a> libraries, but hardly
+idiomatic. The GTFS Realtime format is even more challenging as it is
+serialized as a <a href="https://developers.google.com/protocol-buffers">Protocol Buffer</a>. It <em>might</em> be theoretically
+possible to consume the realtime ProtoBuf stream by providing the
+<code>.proto</code> file to the browser and using a <a href="https://github.com/mapbox/pbf">ProtoBuf javascript
+decoder</a>; in practice, the real-time updates from the <a href="https://api.mta.info/">MTA</a> are megabytes-to-gigabytes and are updated frequently enough
+that I had concerns as to whether a cheap, wall-mounted tablet would
+be able to handle parsing the feeds in-browser at a reasonable
+frequency.</p>
+<p>Thankfully, there are multiple server-side options available which
+vary in quality, completeness, and implementation language. Choosing a
+minimal GTFS server could absolutely work for this use case, but I
+ultimately ended up gravitating towards the <a href="https://www.opentripplanner.org/">Open Trip Planner</a>
+(OTP) project which specializes in route planning (including surface
+street connections using <a href="https://www.openstreetmap.org/">OpenStreetMap</a>). Not only does OTP consume
+GTFS (both static and realtime) for use in its route planning, it
+caches the serialized results for faster reloading, has a fetching
+mechanism to pull the feeds in at a regular cadence, and--most
+importantly for our intended application--has an <a href="http://dev.opentripplanner.org/apidoc/1.0.0/resource_IndexAPI.html">Index API</a> which
+provides a REST interface to query GTFS entities. Even better, it is
+becoming increasingly common for transit agencies themselves to host
+an OTP instance for their route planning or transit time needs--if
+such an instance is public-facing, using it saves a lot of work
+configuring and hosting our own OTP instance.</p>
+<p>The discussion from the previous section roughly translates to the
+following Clojure pseudocode to walk through the GTFS entities and
+collect a useful payload:</p>
+<pre><code class="clojure">(defn stop-times
+  [stop-id]
+  (-&gt;&gt; stop-id
+       fetch-stop
+       fetch-stop-times
+       (map (fn [stop-time]
+              (let [trip  (fetch-trip (:trip-id stop-time))
+                    route (fetch-route (:route-id trip))]
+                (assoc stop-time
+                       :route route
+                       :direction (:direction trip)))))))
+</code></pre>
+<p>Following this, we can <code>concat</code> all the <code>stop-times</code> from all the
+<code>stop-id</code>s together and do a <code>(group-by #(select-keys % [:direction :route]))</code> to bundle them into the rows displayed in the dashboard.</p>
+<p>From the <a href="http://dev.opentripplanner.org/apidoc/1.0.0/resource_IndexAPI.html">Index API</a>, the following endpoints look promising to meet
+these needs:</p>
+<table>
+<thead></thead>
+<tbody>
+<tr><td>stop</td><td><code>/index/stops/{stop-id}</code></td></tr>
+<tr><td>stop times</td><td><code>/index/stops/{stop-id}/stoptimes</code></td></tr>
+<tr><td>trip</td><td><code>/index/trips/{trip-id}</code></td></tr>
+<tr><td>route</td><td><code>/index/routes/{route-id}</code></td></tr>
+</tbody>
+</table>
+<p>As it turns out, the Index API is able to flatten the <code>trip</code> into the
+<code>stop</code> entity (<code>/index/stops/{stop-id}</code>) for us in the scenario where
+the stop services a single line + direction. This does not initially
+sound like a very useful optimization for more complex transit systems
+that routinely have multiple routes traveling multiple directions that
+stop at the same station. However, in the case of the MTA's GTFS, the
+agency choose to model stations hierarchically, where the main station
+is the parent stop and different lines+directions are child stops
+within the same overall station. The Index API also directly adds the
+<code>route-id</code> to the individual <code>stop times</code> (i.e., it traverses the
+<code>stop-time -&gt; trip</code> entities for us). Thus by choosing these &quot;child&quot;
+stops that represent a single line + direction, we can save having to
+make the additional <code>trip</code> call to get the direction + route ID. Under
+this optimization assumption we get an even trimmer effective ERD:</p>
+<p><a href="/img/posts/cockpit/gtfs-erd-smaller.svg"> <img
+  src="/img/posts/cockpit/gtfs-erd-smaller.svg" alt="GTFS ERD Smaller"
+  width="300" /> </a></p>
+<p>Depending on your particular agency, this optimization may not be
+applicable or might be overkill if you're hosting your own OTP and
+don't have any concerns about the number of API queries. If
+self-hosting, this might be a good candidate for the <a href="https://samnewman.io/patterns/architectural/bff/">BFF</a> pattern,
+but the rest of this post assumes a preexisting OTP instance without
+any extra server-side components on top of it.</p>
+<h1 id="implementation">Implementation</h1>
+<p>Now that we've settled on the physical API to use and know the
+relationships among the entities we need for our dashboard, all we
+have left is to code and style it. Rather than go line-by-line as in
+previous installments, I'll only be going over the highlights of the
+<a href="https://github.com/malloc47/cockpit/blob/d4badb7e652014693574063806a8ccda27d9fa36/src/cljs/cockpit/transit.cljs">source code</a> in this section.</p>
+<p>As with other external APIs we need to hit, we use
+<a href="https://github.com/day8/re-frame-http-fx">re-frame-http-fx</a> for defining the &quot;effect handlers&quot; that made the
+side-effecting REST calls. An example where we fetch the <code>stop-times</code>
+(assumes that the <code>stop</code> has already been fetched and is passed as
+input):</p>
+<pre><code class="clojure">(re-frame/reg-event-fx
+ ::fetch-stop-times
+ (fn [_ [_ {:keys [stop-id] :as stop}]]
+   {:http-xhrio
+    (merge
+     otp-request
+     {:uri        (str config/otp-uri
+                       &quot;/routers/default/index/stops/&quot;
+                       stop-id
+                       &quot;/stoptimes&quot;)
+      :on-success [::persist-stop-times [:transit :stop-times stop]]
+      :on-failure [::events/http-fail [:transit :stop-times stop]]})}))
+</code></pre>
+<p>The notable part of this effect handler is the <code>::persist-stop-times</code>
+event which is dispatched when the effect handler is successful. The
+<code>::persist-stop-times</code> event is, itself an effect handler that
+persists the <code>stop-times</code> API payload into the <code>re-frame.db/app-db</code>
+while also fanning out (<code>:dispatch-n</code>) to trigger <code>::fetch-route</code>
+events for all the new <code>route-ids</code> that it finds:</p>
+<pre><code class="clojure">(re-frame/reg-event-fx
+ ::persist-stop-times
+ (fn [{:keys [db]} [_ key-path stop-times]]
+   (let [existing-route-ids (-&gt; db :transit :routes keys set)
+         new-route-ids      (-&gt;&gt; stop-times :route :id set)
+         ;; diff what is in the DB with the newly-seen routes so we
+         ;; only fetch them once
+         route-ids          (-&gt;&gt; (difference new-route-ids
+                                             existing-route-ids)
+                                 (remove nil?))
+         stop-id            (-&gt; key-path last :stop-id)]
+     {:db         (assoc-in db key-path stop-times)
+      ;; fire requests for the routes listed in the payload
+      :dispatch-n (map (fn [route-id]
+                         [::fetch-route route-id])
+                       route-ids)})))
+</code></pre>
+<p>The route-fetching events are fired after fetching the stop times
+because the routes that serve a particular stop might change at any
+given point so we don't necessarily know all the routes ahead of time.
+And it would be better not to have to preemptively fetch every route
+in the system, particularly for larger agencies like the MTA. We also
+want to avoid re-fetching the same routes over and over again, so
+<code>route-ids</code> that are already present in the <code>app-db</code> are not fetched
+again to minimize API queries, effectively treating the <code>app-db</code> as a
+cache.</p>
+<p>How the <code>stop</code> and <code>route</code> entities are persisted is less interesting
+so I'm omitting examples of them here. Just like the <a href="/building-a-personal-dashboard-in-clojurescript-part-2">weather
+API</a> prior, we now need only to <a href="https://github.com/malloc47/cockpit/blob/d4badb7e652014693574063806a8ccda27d9fa36/src/cljs/cockpit/polling.cljs#L27-L37">poll the
+transit
+API</a>
+at regular intervals to make sure our <code>app-db</code> always has fresh
+information ready for display.</p>
+<p>Like other re-frame applications, now that we have our events defined
+we need to create subscriptions on the resulting <code>app-db</code> changes to
+turn these raw OTP Index API payloads into a processed form ready to
+be used by our view. Our &quot;Level 1&quot; subscriptions are fairly simple:</p>
+<pre><code class="clojure">(re-frame/reg-sub
+ ::stop-times-raw
+ (fn [db _]
+   (-&gt; db :transit :stop-times)))
+;;; Repeat for stops and routes...
+</code></pre>
+<p>which fetches the raw API payload for the <code>stop-times</code>, which looks
+something like this:</p>
+<pre><code class="clojure">[{:route {:id &quot;MTASBWY:1&quot;}
+  :times
+  [{:departureDelay     0
+    :stopName           &quot;South Ferry&quot;
+    :scheduledDeparture 89130
+    :stopId             &quot;MTASBWY:142N&quot;
+    :directionId        &quot;0&quot;
+    :serviceDay         1592539200
+    :tripId             &quot;MTASBWY:5953&quot;
+    :realtimeDeparture  89130
+    :stopHeadsign       &quot;Uptown &amp; The Bronx&quot;
+    :tripHeadsign       &quot;Van Cortlandt Park - 242 St&quot;}]
+    ...}
+ ...]
+</code></pre>
+<p>Note the <code>realtimeDeparture</code> field which is updated by OTP with the
+GTFS Realtime source.  This payload goes through a cleanup
+subscription that grabs specific keys from the payload, places them
+into a flattened data structure, and converts the fixed departure
+timestamp into a &quot;minutes from now&quot; format that we'll want in our
+view:</p>
+<pre><code class="clojure">(re-frame/reg-sub
+ ::stop-times
+ :&lt;- [::stop-times-raw]
+ :&lt;- [::clock/clock]
+ (fn [[stop-times clock] _]
+   (let [now (time-coerce/from-date clock)]
+     (-&gt;&gt; stop-times
+          vals
+          (apply concat)
+          (mapcat
+           (fn [{:keys [times route]}]
+             (-&gt;&gt; times
+                  (map #(assoc % :route route))
+                  (map
+                   (fn [{time           :realtimeDeparture
+                         day            :serviceDay
+                         stop-id        :stopId
+                         {route-id :id} :route
+                         direction-id   :directionId}]
+                     {:minutes        (-&gt; time (+ day) (* 1e3)
+                                          time-coerce/from-long
+                                          (-&gt;&gt; (safe-interval now))
+                                          time/in-seconds
+                                          (/ 60)
+                                          js/Math.ceil)
+                      :stop-id        stop-id
+                      :route-id       route-id
+                      :direction-id   direction-id})))))))))
+</code></pre>
+<p>This subscription code is detailed and has some assorted helpers
+(<code>safe-interval</code>, the <code>cljs-time</code> namespaces) that are significant but
+not worth a tangent right now. As before, I'm also omitting similar
+cleanup subscriptions for the <code>stop</code> and <code>route</code> payloads.</p>
+<p>Finally, we join all three of <code>stops</code>, <code>stop-times</code>, and <code>routes</code>
+together with a 3rd-level subscription:</p>
+<pre><code class="clojure">(re-frame/reg-sub
+ ::stop-times-processed
+ :&lt;- [::stop-times]
+ :&lt;- [::routes]
+ :&lt;- [::stops]
+ (fn [[stop-times routes stops] _]
+   (-&gt;&gt; stop-times
+        (filter (-&gt; (every-pred nat-int? (partial &gt; 60))
+                    (comp :minutes)))
+        (map (fn [{:keys [stop-id route-id] :as stop-time}]
+               (-&gt; stop-time
+                   (assoc :stop (get stops stop-id))
+                   (assoc :route (get routes route-id)))))
+        ;; Make this an inner join
+        (filter (every-pred :stop :route))
+        ;; Group by stop only
+        (group-by #(select-keys % [:stop]))
+        ;; Add route to key after grouping to keep routes together
+        (map (fn [[k v]]
+               [(assoc k :route (roll-up-route v))
+                v]))
+        (into {})
+        (map-vals #(-&gt;&gt; %
+                        (filter
+                         (fn [{:keys [direction-id]
+                               {stop-direction-id :direction-id} :stop}]
+                           (or
+                            (= direction-id stop-direction-id)
+                            (nil? stop-direction-id))))
+                        (sort-by :minutes)
+                        (take 4)))
+        (sort-by (juxt (comp :sort-override :stop first)
+                       (comp :sort-order :route first)
+                       (comp :stop-id :stop first))))))
+</code></pre>
+<p>This is a <em>lot</em> to unpack, especially compared with the pseudocode
+above (which probably means this code needs some refactoring into more
+subscriptions); out of laziness, I'll just summarize the highlights:</p>
+<ul>
+<li>Keep only <code>stop-times</code> that are less than 60 minutes out</li>
+<li>The <code>stop</code> and <code>route</code> are attached to the <code>stop-time</code> with an inner
+join</li>
+<li>Group all <code>stop-times</code> by the different <code>stops</code> they represent</li>
+<li>Do a &quot;roll up&quot; of all the routes attached to the stop times inside
+of each group with the <a href="https://github.com/malloc47/cockpit/blob/d4badb7e652014693574063806a8ccda27d9fa36/src/cljs/cockpit/transit.cljs#L233-L256"><code>roll-up-route</code>
+function</a>,
+which lets us show a stop, say
+<a href="https://en.wikipedia.org/wiki/Lexington_Avenue%E2%80%9363rd_Street_station">Lex/63rd</a>,
+as a single row labeled &quot;F/Q&quot; rather than having separate rows for
+the F and Q lines. This is typically more useful for express lines
+or other situations where you care only about the latest departure
+but don't care about the particular line.</li>
+<li>Filter out mislabeled stop times going the wrong direction at a stop</li>
+<li>Sort the stop times in each group in ascending order</li>
+<li>Take the first four stop-times in each group to show in the view</li>
+<li>Sort the groups themselves</li>
+</ul>
+<p>We now have a stable, easy-to-consume set of groups corresponding to
+all the stops we care about, each with up to four upcoming departure
+times in minutes.</p>
+<p>This payload is subsequently rendered in the view. Recall that we want
+a series of rows in our view that look like:</p>
+<p><a href="/img/posts/cockpit/transit-row.png"> <img
+  src="/img/posts/cockpit/transit-row.png" alt="Transit row"
+  width="300" /> </a></p>
+<p>where the arrow specifies the direction of travel, the round symbol
+specifies the particular route name, and the stop times fan out to the
+right. This is rendered with:</p>
+<pre><code class="clojure">(defn transit []
+  [:&gt; Card {:height &quot;48vh&quot;}
+   [:&gt; CardContent
+    [:&gt; Grid {:container true :spacing 1 :alignItems &quot;center&quot;}
+     (map
+      (fn [[{{:keys [color text-color short-name route-id]} :route
+             {:keys [direction-id stop-id]} :stop}
+            stop-times]]
+        ;; Since this element is being dynamically generated, must
+        ;; specify key so React can do its reconcilliation
+        [:&lt;&gt; {:key (str stop-id &quot;-&quot; route-id)}
+
+         ;; Arrow pointing up or down corresponding to the direction
+         [:&gt; Grid {:item true :xs 1}
+          [:&gt; Typography {:variant &quot;h4&quot; :color &quot;textSecondary&quot;}
+           (get direction-id-&gt;arrow direction-id &quot;&quot;)]]
+
+         ;; Line symbol that takes its color directly from the
+         ;; transit agency's route metadata
+         [:&gt; Grid {:item true :xs 2}
+          [:&gt; Avatar {:style {:background-color (str &quot;#&quot; color)
+                              :color (str &quot;#&quot; text-color)}}
+           short-name]]
+
+         ;; Render the stop
+         (-&gt;&gt; (concat stop-times (repeat nil))
+              (map-indexed
+               (fn [idx {:keys [minutes] :as stop-time}]
+                 [:&lt;&gt; {:key idx}
+                  [:&gt; Grid {:item true :xs 2}
+                   (when stop-time
+                     [:&gt; Typography
+                      [:span
+                       (if (&gt; minutes 0)
+                         [:&lt;&gt; minutes [:span &quot;m &quot;]]
+                         &quot;Now &quot;)]])]]))
+              (take 4))
+
+         [:&gt; Grid {:item true :xs 1}]])
+      @(re-frame/subscribe [::transit/stop-times-processed]))]]])
+</code></pre>
+<p>This is another beast of a function (and I omitted some styling just
+to trim it down this small), but broken down is not too complicated:
+The outer <code>map</code> generates a row where each row consists of the up/down
+arrow and a circular <code>Avatar</code> symbol with the line <code>short-name</code> to
+display the route. The inner <code>map-indexed</code> generates exactly 4 stop
+times (or empty <code>Grid</code> items to pad out the grid).</p>
+<h1 id="conclusion">Conclusion</h1>
+<p>Since this the final post in the series, I would be remiss not to
+include some photos of the finished product:</p>
+<table>
+<thead></thead>
+<tbody>
+<tr><td><a href="/img/posts/cockpit/wall1.jpg"> <img src="/img/posts/cockpit/wall1.jpg" alt="Wall-mounted dashboard" height="250" /> </a></td><td><a href="/img/posts/cockpit/wall2.jpg"> <img src="/img/posts/cockpit/wall2.jpg" alt="Wall-mounted dashboard with door" height="250" /> </a></td></tr>
+</tbody>
+</table>
+<p>Differing slightly from the <a href="/building-a-personal-dashboard-in-clojurescript">first installment</a>, I've since replaced
+the stock chart in the lower right with a webcam view from <a href="https://nyc.gov/dot">NYC DOT</a>
+but kept the appearance otherwise unchanged.</p>
+<p>The dashboard is displayed on an inexpensive, previous-generation
+<a href="https://www.amazon.com/Fire-HD-8-Previous-Generation-9th/dp/B0794RHPZD">Amazon Fire 8</a> using the <a href="https://github.com/thanksmister/wallpanel-android">WallPanel</a> app (having switched away
+from <a href="https://www.fully-kiosk.com/">Fully Kiosk</a> for this open-source option) to keep the
+ClojureScript SPA running continually. To physically affix the tablet
+to the wall, I purchased a <a href="https://www.amazon.com/gp/product/B01BX5YWF4/">tablet wall mount</a> which adheres using
+Command Strips. A wall-colored Micro USB cable to keep the tablet
+charged completes the installation.</p>
+<p>So far, this setup has been working well. There are some minor
+annoyances with the hardware: This particular Fire tablet does not
+make ambient light adjustments to the screen brightness so it lightens
+my living room considerably at night. Given that this tablet is a full
+order of magnitude cheaper than the premium tablet options, it has
+been more than sufficient for this purpose and I won't be overly upset
+by battery or screen burn-in issues long-term.</p>
+<table>
+<thead></thead>
+<tbody>
+<tr><td><a href="/building-a-personal-dashboard-in-clojurescript">Part 1</a></td><td><a href="/building-a-personal-dashboard-in-clojurescript-part-2">Part 2</a></td><td>Part 3</td></tr>
+</tbody>
+</table>
+
+    </div>
+  </div>
+</div>
+
+<div class="content">
+  <div class="content-wrap">
+    <p class="date">2021 <span class="date-dark">00</span>07 <span class="date-dark">00</span>09 </p>
+        <p class="social">
+      <a href="https://www.facebook.com/sharer.php?u=https%3A%2F%2Fwww.malloc47.com%2F&amp;t="
+	 target="_blank"
+	 rel="nofollow"
+	 title="Share on Facebook">F</a>
+      <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.malloc47.com%2F&amp;text=&amp;via=malloc47&amp;related=malloc47"
+	 target="_blank"
+	 title="Tweet"
+	 rel="nofollow">T</a>
+    </p>
+
+    <header><a href="/building-a-personal-dashboard-in-clojurescript-part-2/">Building a Personal Dashboard in ClojureScript Part 2</a></header>
+    <div class="content-body">
+      <p>Following the <a href="/building-a-personal-dashboard-in-clojurescript">previous installment</a> in my series on building a
+dashboard in ClojureScript, I'll be diving into the weather card.</p>
+<a href="/img/posts/cockpit/weather.png">
+  <img src="/img/posts/cockpit/weather.png" alt="Weather card" width="400" />
+</a>
+<p>Like any re-frame application, this comes in two major pieces:
+consuming from the API to update the application state, and rendering
+the state on the page. Before showing how this is wired up, however,
+let's first dive into the external weather API itself.</p>
+<h1 id="weather-api">Weather API</h1>
+<p>There are several different weather APIs with a free tier that can
+handle the minimal traffic of a single dashboard. I landed on <a href="https://openweathermap.org/api">Open
+Weather Map API</a>, which has both a free tier and an easy-to-use <a href="https://openweathermap.org/api/one-call-api">one
+call endpoint</a> containing all the weather granularity (current and
+day/hour/minute-level) needed for a reasonable dashboard.</p>
+<p>A sample request (with lots of fields omitted):</p>
+<pre><code class="bash">&gt; curl 'http://api.openweathermap.org/data/2.5/onecall?lat=&lt;latitude&gt;&amp;lon=&lt;longitude&gt;&amp;units=imperial&amp;appid=&lt;apikey&gt;' | jq .
+
+{
+  &quot;current&quot;: {
+    &quot;dt&quot;: 1625517908,
+    &quot;sunrise&quot;: 1625477417,
+    &quot;sunset&quot;: 1625531408,
+    &quot;temp&quot;: 82.31,
+    &quot;feels_like&quot;: 84.31,
+    &quot;pressure&quot;: 1017,
+    &quot;humidity&quot;: 57,
+    &quot;weather&quot;: [
+      {
+        &quot;id&quot;: 800,
+        &quot;main&quot;: &quot;Clear&quot;,
+        &quot;description&quot;: &quot;clear sky&quot;,
+        &quot;icon&quot;: &quot;01d&quot;
+      }
+    ]
+    ...
+  },
+  &quot;daily&quot;: [
+    {
+      &quot;dt&quot;: 1625504400,
+      &quot;sunrise&quot;: 1625477417,
+      &quot;sunset&quot;: 1625531408,
+      &quot;temp&quot;: {
+        &quot;day&quot;: 83.12,
+        &quot;min&quot;: 66.2,
+        &quot;max&quot;: 83.82,
+        &quot;night&quot;: 75.74,
+        &quot;eve&quot;: 81.82,
+        &quot;morn&quot;: 67.89
+      },
+      &quot;feels_like&quot;: {
+        &quot;day&quot;: 83.86,
+        &quot;night&quot;: 76.21,
+        &quot;eve&quot;: 83.5,
+        &quot;morn&quot;: 68.29
+      },
+      &quot;humidity&quot;: 49,
+      &quot;weather&quot;: [
+        {
+          &quot;id&quot;: 500,
+          &quot;main&quot;: &quot;Rain&quot;,
+          &quot;description&quot;: &quot;light rain&quot;,
+          &quot;icon&quot;: &quot;10d&quot;
+        }
+      ],
+      &quot;rain&quot;: 0.53,
+      ...
+    },
+    ...
+  ],
+  &quot;minutely&quot;: [...],
+  &quot;hourly&quot;: [...],
+  &quot;alerts&quot;: [...]
+}
+</code></pre>
+<p>In addition, we'll want to tie the payload to a set of weather icons
+supplied by the <a href="https://erikflowers.github.io/weather-icons/">Weather Icons</a> font together using this <a href="https://github.com/erikflowers/weather-icons/issues/204">mapping</a>
+(represented below as <code>id-&gt;icon</code>).</p>
+<h1 id="api-client">API Client</h1>
+<p>In re-frame parlance, we use an &quot;effects handler&quot; to make http calls,
+which is helpfully provided by <a href="https://github.com/day8/re-frame-http-fx">re-frame-http-fx</a>. This allows us to
+define a <code>::fetch-weather</code> event analogous to the <code>curl</code> command above:</p>
+<pre><code class="clojure">(re-frame/reg-event-fx
+ ::fetch-weather
+ (fn [_ _]
+   {:http-xhrio
+    {:method :get
+     :uri    &quot;http://api.openweathermap.org/data/2.5/onecall&quot;
+     :params {:lat   (:lat config/home)
+              :lon   (:lon config/home)
+              :units &quot;imperial&quot;
+              :appid config/open-weather-api-key}
+     :response-format (ajax/json-response-format {:keywords? true})
+     :on-success      [::events/http-success [:weather]]
+     :on-failure      [::events/http-fail [:weather]]}}))
+</code></pre>
+<p>where the success and fail events are defined as:</p>
+<pre><code class="clojure">(re-frame/reg-event-db
+ ::http-success
+ (fn [db [_ key-path result]]
+   (assoc-in db key-path result)))
+
+(re-frame/reg-event-db
+ ::http-fail
+ (fn [db [_ key-path]]
+   (assoc-in db key-path {})))
+</code></pre>
+<p>We can trigger this event at regular intervals, similar to the clock
+card:</p>
+<pre><code class="clojure">(defn init []
+  ...
+  (re-frame/dispatch
+   [::poll/set-rules
+    [{:interval                 900 ; 15 minutes
+      :event                    [::weather/fetch-weather]
+      :dispatch-event-on-start? true}]])
+  ...)
+</code></pre>
+<p>The 15 minute interval is set such that the API's free tier daily
+request limit is apportioned throughout the day with some headroom
+remaining.</p>
+<p>Finally, it is customary to create a &quot;level 2&quot; extractor subscription
+to pull the payload back out of the application state even though it
+is largely a trivial subscription:</p>
+<pre><code class="clojure">(re-frame/reg-sub
+ ::weather
+ (fn [db _]
+   (:weather db)))
+</code></pre>
+<p>Getting the weather payload ensconced in <code>re-frame.db/app-db</code> with a
+basic extractor is but our first step. It would be awkward for our
+view to consume directly from the full API payload as it contains many
+elements that would need to be filtered out or ignored; it also has
+the disadvantage that re-frame would have to re-render the weather
+element every time the payload is fetched even for UI elements that do
+not need to change. Enter the &quot;level 3&quot; <a href="https://day8.github.io/re-frame/subscriptions/">materialized
+view</a>, which filters down the payload into meaningful
+units of work. In this case, these units are:</p>
+<ul>
+<li>Sunrise and sunset time</li>
+<li>Current conditions</li>
+<li>6 day forecast</li>
+</ul>
+<p>The sunrise/sunset subscription is easy once we've defined the
+<code>epoch-&gt;local-date</code> helper (that uses <a href="https://github.com/andrewmcveigh/cljs-time">cljs-time</a> internally) to
+parse the times into an object:</p>
+<pre><code class="clojure">(re-frame/reg-sub
+ ::sun
+ :&lt;- [::weather]
+ (fn [{{:keys [sunrise sunset]} :current} _]
+   {:sunrise (-&gt; sunrise epoch-&gt;local-date .toUsTimeString)
+    :sunset  (-&gt; sunset epoch-&gt;local-date .toUsTimeString)}))
+</code></pre>
+<p>The current conditions subscription is also relatively simple,
+involving some light formatting (some of which could arguably be
+pushed down to the view layer):</p>
+<pre><code class="clojure">(re-frame/reg-sub
+ ::conditions
+ :&lt;- [::weather]
+ (fn [{{humidity                :humidity
+        feels-like              :feels_like
+        current-temp            :temp
+        [{:keys [description]}] :weather} :current
+       [{:keys                [rain snow]
+         {low :min high :max} :temp}]     :daily} _]
+   {:humidity    (-&gt; humidity (str &quot;%&quot;))
+    :feels-like  (-&gt; feels-like int (str &quot;°&quot;))
+    :description (some-&gt; description str/capitalize)
+    :rain        (some-&gt; rain mm-&gt;in (round-nonzero 2) (str &quot;\&quot;&quot;))
+    :snow        (some-&gt; snow mm-&gt;in (round-nonzero 2) (str &quot;\&quot;&quot;))
+    :temp        (some-&gt; current-temp int (str &quot;°&quot;))
+    :low         (some-&gt; low int (str &quot;°&quot;))
+    :high        (some-&gt; high int (str &quot;°&quot;))}))
+</code></pre>
+<p>This subscription plucks the current weather conditions from the
+payload (using the fancy <a href="https://clojure.org/guides/destructuring">destructuring</a> that makes Clojure so
+effective) and returns a new, sparser map with the values formatted
+and ready to be used in a view.</p>
+<p>The most complex subscription is the forecast, which involves
+processing the <code>:daily</code> list of elements and returning a new list of
+ready-to-template maps:</p>
+<pre><code class="clojure">(re-frame/reg-sub
+ ::forecast
+ :&lt;- [::weather]
+ (fn [{forecast :daily} _]
+   (-&gt;&gt; forecast
+        rest                            ; skip today
+        (map (fn [{date                 :dt
+                   {low :min high :max} :temp
+                   rain                 :rain
+                   snow                 :snow
+                   [{icon-id :id} &amp; _]  :weather}]
+               {:epoch   date
+                :weekday (-&gt; date
+                             epoch-&gt;local-date
+                             .getWeekday
+                             number-&gt;weekday)
+                :icon    (id-&gt;icon icon-id)
+                :high    (some-&gt; high int (str &quot;°&quot;))
+                :low     (some-&gt; low int (str &quot;°&quot;))
+                :rain    (some-&gt; rain mm-&gt;in (round-nonzero 1) (str &quot;\&quot;&quot;))
+                :snow    (some-&gt; snow mm-&gt;in (round-nonzero 1) (str &quot;\&quot;&quot;))}))
+        (take 6))))
+</code></pre>
+<p>This is similar to the current conditions subscription above; the
+major change here is that we are <code>map</code>ing over the list of forecasts
+and taking only a fixed number of them.</p>
+<p>This wraps up the event/subscription handling; with this code, we now
+ingest from the API and have defined a graph of subscriptions that
+whittles the payload down into filtered chunks that are ready to be
+placed into our view.</p>
+<h1 id="weather-card">Weather Card</h1>
+<p>Creating views like the weather card is as much as art as it is an
+engineering effort, and I don't expect I'd win any awards for either
+aspect.</p>
+<p>Like any normal Clojure function, breaking our view into smaller
+pieces will greatly aid readability:</p>
+<pre><code class="clojure">(defn weather []
+  [:&gt; Card
+   [:&gt; CardContent
+    [weather-description]
+    [weather-conditions]
+    [weather-forecast]]])
+</code></pre>
+<p>Like the <a href="/building-a-personal-dashboard-in-clojurescript">previous installment</a>, the view uses uses the
+<a href="https://material-ui.com/">Material-UI</a> react framework (i.e., the <code>Card</code>, <code>CardContent</code>
+components and many more) which comes with much saner style defaults
+than any CSS I could cook up.</p>
+<pre><code class="clojure">(defn weather-conditions []
+  [:&gt; Grid {:container true :justify &quot;center&quot;}
+   [:&gt; Grid {:item true :xs 3}
+    [:&gt; Typography {:variant &quot;h1&quot;}
+     ;; Display a large icon of current conditions
+     [:i {:class (str &quot;wi wi-&quot;
+                      @(re-frame/subscribe [::weather/icon]))}]]]
+   [:&gt; Grid {:item true :xs 5}
+    [:&gt; Typography {:align &quot;center&quot; :variant &quot;h1&quot;
+                    :display &quot;inline&quot;}
+     ;; Large view of the current temperature
+     (:temp @(re-frame/subscribe [::weather/conditions]))]]
+   [:&gt; Grid {:item true :xs 2}
+    (let [{:keys [low high]}
+	     @(re-frame/subscribe [::weather/conditions])]
+      [:&gt; Typography {:align &quot;right&quot; :variant &quot;h4&quot;}
+       high [:br] low])]])
+</code></pre>
+<p>With some minor extra styling, we end up with a nice, large display of
+the current temperature:</p>
+<a href="/img/posts/cockpit/weather-current.png">
+  <img src="/img/posts/cockpit/weather-current.png" alt="Current weather" width="400" />
+</a>
+<p>Like the companion subscription, the forecast view <code>map</code>s over the
+individual days in the subscribed output to produce, in this case,
+<code>Grid</code> items to fill the card:</p>
+<pre><code class="clojure">(defn weather-forecast []
+  [:&gt; Grid {:container true}
+   (map
+    (fn [{:keys [epoch weekday icon high low rain snow]}]
+      ^{:key epoch}
+      [:&gt; Grid {:item true :xs 2}
+       [:&gt; Typography {:key epoch
+                       :variant &quot;body1&quot;
+                       :align &quot;center&quot;}
+        weekday]
+       [:&gt; Typography {:align &quot;center&quot; :variant &quot;h5&quot;}
+        [:i {:class (str &quot;wi wi-&quot; icon)}]]
+       [:&gt; Typography {:align &quot;center&quot; :variant &quot;subtitle2&quot;}
+        high
+        (gstring/unescapeEntities &quot;&amp;#8194;&quot;)
+        low
+	    (when rain
+          [:&lt;&gt; [:br] (list &quot; &quot; rain)])
+        (when snow
+          [:&lt;&gt;
+            (list &quot; &quot; snow)])]])
+    @(re-frame/subscribe [::weather/forecast]))])
+</code></pre>
+<p>When generating view elements dynamically, specifying the <code>key</code> is
+important for re-frame (and React under-the-hood) to reliably match up
+elements that must be re-rendered when the payload changes. This gives
+us our 6-day forecast (which is all I could fit on the card even
+though the API returns more data):</p>
+<a href="/img/posts/cockpit/weather-forecast.png">
+  <img src="/img/posts/cockpit/weather-forecast.png" alt="Weather forecast" width="400" />
+</a>
+<p>Last but not least, having a general text description of the weather
+is handy to capture leftover details that do not appear elsewhere in
+the UI:</p>
+<pre><code class="clojure">(defn weather-description []
+  (let [{:keys [humidity feels-like description rain snow]}
+        @(re-frame/subscribe [::weather/conditions])]
+    (-&gt;&gt; [{:content description :render? description}
+          {:prefix &quot;Feels like &quot; :content feels-like :render? true}
+          {:content humidity :render? true}
+          {:postfix &quot; rain&quot; :content rain :render? rain}
+          {:postfix &quot; snow&quot; :content snow :render? snow}]
+         (map (fn [{:keys [prefix postfix content render?]}]
+                (if render?
+                  (-&gt;&gt; [prefix content postfix] (remove nil?) vec)
+                  [])))
+         (remove empty?)
+         (interpose [&quot; | &quot;])
+         (apply concat [:&gt; Typography {:align &quot;center&quot;
+                                       :color &quot;textSecondary&quot;
+                                       :variant &quot;body1&quot;}])
+         vec)))
+</code></pre>
+<p>This function is more elaborate than it needs to be, but is handy for
+adding new things to appear in the description--it first converts the
+individual datapoints into a vector of maps that (depending on the
+value of the <code>:render?</code> key) are subsequently concatenated into a
+<code>|</code>-separated series of descriptions:</p>
+<a href="/img/posts/cockpit/weather-description.png">
+  <img src="/img/posts/cockpit/weather-description.png" alt="Weather description" width="400" />
+</a>
+<p>The full working code is available in <a href="https://github.com/malloc47/cockpit/blob/ac0ba2f5c7d985aceca03fdb079050d498983587/src/cljs/cockpit/weather.cljs">weather.cljs</a> and
+<a href="https://github.com/malloc47/cockpit/blob/ac0ba2f5c7d985aceca03fdb079050d498983587/src/cljs/cockpit/views.cljs">views.cljs</a> which include a few extra visual tweaks and custom
+React components. Also omitted from the code in this post are a few
+visual details from the screenshot above, including the &quot;refresh&quot;
+button that triggers the <code>::fetch-weather</code> event on-demand and the
+timer in the corner showing how much time has elapsed since the last
+fetch--not essential features for everyday use, but valuable for
+debugging.</p>
+<p>With luck, the next post in this series will get to my favorite part
+of the dashboard: the transit card.</p>
+<table>
+<thead></thead>
+<tbody>
+<tr><td><a href="/building-a-personal-dashboard-in-clojurescript">Part 1</a></td><td>Part 2</td><td><a href="/building-a-personal-dashboard-in-clojurescript-part-3">Part 3</a></td></tr>
+</tbody>
+</table>
+
+    </div>
+  </div>
+</div>
+
+<div class="content">
+  <div class="content-wrap">
+    <p class="date">2020 <span class="date-dark">00</span>12 <span class="date-dark">00</span>27 </p>
+        <p class="social">
+      <a href="https://www.facebook.com/sharer.php?u=https%3A%2F%2Fwww.malloc47.com%2F&amp;t="
+	 target="_blank"
+	 rel="nofollow"
+	 title="Share on Facebook">F</a>
+      <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.malloc47.com%2F&amp;text=&amp;via=malloc47&amp;related=malloc47"
+	 target="_blank"
+	 title="Tweet"
+	 rel="nofollow">T</a>
+    </p>
+
+    <header><a href="/building-a-personal-dashboard-in-clojurescript/">Building a Personal Dashboard in ClojureScript</a></header>
+    <div class="content-body">
+      <p>After the 100th time checking the weather or looking up transit times
+before heading out the door in the morning, I came to the realization
+that having a tablet mounted near my front door with relevant
+information would be useful. In anticipation of venturing outdoors
+more regularly in a post-vaccine world, I decided to build a personal
+dashboard as my pandemic project.</p>
+<p>There is a good deal of prior art in this space, from the <a href="https://magicmirror.builders/">Magic
+Mirror</a> Raspberry-Pi-deployed dashboard intended to be embedded in a
+DIY mirror, to customizable <a href="https://apps.apple.com/us/app/id659672658">iPad apps</a> that have all the common
+personal dashboard features out-of-the-box. For my part, I wanted to
+balance the customizability of a DIY project with the lightweight-ness
+of a solution that runs entirely on a tablet. I specifically wanted to
+customize the particular APIs used, including some less common sources
+like local transit times. Though I make no claims to being a frontend
+developer, I expect it is uncontroversial to say that a backend-less
+<a href="https://en.wikipedia.org/wiki/Single-page_application">SPA</a> is among the more lightweight options in the web application
+space. And my go-to for building frontend applications is
+<a href="https://clojurescript.org/">ClojureScript</a>.</p>
+<p>This series of posts will walk through the creation of <a href="https://github.com/malloc47/cockpit">cockpit</a>,
+the ClojureScript SPA I now have mounted on my wall. Before getting to
+specifics, let's look at the final dashboard:</p>
+<a href="/img/posts/cockpit/full.png">
+  <img src="/img/posts/cockpit/full.png" alt="Full dashboard view not guaranteed to make sense" width="600" />
+</a>
+<p>Some highlights:</p>
+<ul>
+<li>
+<p>The dashboard is divided into &quot;Cards&quot; using a responsive grid layout
+with primitives from <a href="https://material-ui.com/">Material-UI</a>.</p>
+</li>
+<li>
+<p>Data for each card is polled at a regular interval with a timer in
+the bottom of each card showing the time elapsed since the data was
+last fetched and a &quot;refresh&quot; button to fetch the data right away.</p>
+</li>
+<li>
+<p>The weather card is sourced from the <a href="https://openweathermap.org/api">Open Weather Map API</a> with
+icon styling provided by the <a href="https://erikflowers.github.io/weather-icons/">Weather Icons</a> font. It includes
+typical low/high, forecast, and precipitation information.</p>
+</li>
+<li>
+<p>The clock card is self-explanatory--the time is obtained from a
+plain Javascript <code>Date()</code> call which returns the system date/time in
+the local timezone.</p>
+</li>
+<li>
+<p>Stock data is pulled from the <a href="https://iexcloud.io/docs/api/">IEX Cloud API</a> and styled with
+<a href="https://github.com/borisyankov/react-sparklines">react-sparklines</a>.</p>
+</li>
+<li>
+<p>The transit card contains rows with arrival times at a transit stop
+(arrows indicating cardinal direction at the stop). The data source
+here is an <a href="https://www.opentripplanner.org/">Open Trip Planner</a> instance loaded with the
+<a href="https://en.wikipedia.org/wiki/General_Transit_Feed_Specification">GTFS</a> feeds from the particular transit agency in
+question.</p>
+</li>
+<li>
+<p>The compiled dashboard is physically hosted from my home router and
+is displayed on an inexpensive <a href="https://www.amazon.com/Fire-HD-8-Previous-Generation-9th/dp/B0794RHPZD">Amazon Fire 8</a> tablet with the
+<a href="https://www.fully-kiosk.com/">Fully Kiosk</a> app.</p>
+</li>
+</ul>
+<p>There are loads more details that go into a card--each is effectively
+its own mini application. This post will primarily cover the skeleton
+of the dashboard and the bare-bones clock card; I'll aspirationally
+follow-up with future posts to explore the other cards in the
+dashboard.</p>
+<h1 id="dashboard-skeleton">Dashboard Skeleton</h1>
+<p>In the ClojureScript SPA space, there are several stand-out React
+wrappers vying for dominance. For this project, I chose <a href="https://github.com/day8/re-frame">re-frame</a>
+since the learning curve for a small-scale project was lighter than
+<a href="https://fulcro.fulcrologic.com/">Fulcro</a>. Rather than wire all the various libraries, build tools,
+and debugging utilities together manually, the <a href="https://github.com/day8/re-frame-template">re-frame-template</a>
+makes it easy to get started. This</p>
+<pre><code>lein new re-frame cockpit +10x +cider +kondo +test
+</code></pre>
+<p>is basically how I seeded the repo. The biggest opinion imposed in the
+template aside from re-frame itself is <a href="https://github.com/thheller/shadow-cljs">shadow-cljs</a> as the build
+tool.</p>
+<p>With a skeleton project in hand, let's wire up the views. Dipping our
+toes into Material UI requires adding it as a dependency to
+<code>src/cljs/deps.edn</code>:</p>
+<pre><code class="clojure">{:npm-deps {&quot;@material-ui/core&quot;  &quot;4.9.13&quot;
+            &quot;@material-ui/icons&quot; &quot;4.9.1&quot;}
+ ...}
+</code></pre>
+<p>which will instruct <code>shadow-cljs</code> to fetch the dependencies through
+<code>npm</code> during the build.</p>
+<p>The <code>src/cljs/&lt;project&gt;/views.cljs</code> file is where the &quot;Hello World&quot;
+<code>main-panel</code> lives. Thanks to the magic of <code>shadow-cljs</code>, we can
+require the React components directly into the <code>cockpit.views</code>
+namespace as if they were native ClojureScript code:</p>
+<pre><code class="clojure">(ns cockpit.views
+  (:require
+   [re-frame.core :as re-frame]
+   [&quot;@material-ui/core/Card&quot;        :default Card]
+   [&quot;@material-ui/core/CardContent&quot; :default CardContent]
+   [&quot;@material-ui/core/Container&quot;   :default Container]
+   [&quot;@material-ui/core/Grid&quot;        :default Grid]
+   [&quot;@material-ui/core/CssBaseline&quot; :default CssBaseline]
+   [&quot;@material-ui/core/Typography&quot;  :default Typography]))
+</code></pre>
+<p>With this in place, we can modify the <code>main-panel</code> with our Material
+UI <a href="https://material-ui.com/components/grid/">Grid</a> components:</p>
+<pre><code class="clojure">(defn main-panel []
+  (let [card-opts {:item true :xs 12 :sm 12 :md 6  :lg 4}]
+    [:&gt; CssBaseline
+     [:&gt; Container {:maxWidth false}
+      [:&gt; Grid {:container true :spacing 1}
+       [:&gt; Grid card-opts [weather]]
+       [:&gt; Grid card-opts [clock]]
+       [:&gt; Grid card-opts [transit]]
+       [:&gt; Grid card-opts [stocks]]]]]))
+</code></pre>
+<p>The <code>:&gt;</code> shorthand adapts React components into Reagent
+components. <code>weather</code>, <code>clock</code>, <code>transit</code>, and <code>stocks</code> are functions
+that define the contents of each card. This gives us a blank slate to
+fill in our cards with content.</p>
+<h1 id="clock-card">Clock Card</h1>
+<a href="/img/posts/cockpit/clock.png">
+  <img src="/img/posts/cockpit/clock.png" alt="Clock card" width="400" />
+</a>
+<p>The clock card consists of a header with the date, the current local
+time, a side-by-side view of the time in the US Central and Pacific
+time zones, and the sunrise/sunset times.</p>
+<p>The <code>clock</code> view implementing this looks something like:</p>
+<pre><code class="clojure">(defn clock []
+  [:&gt; Card
+   [:&gt; CardContent
+
+    [:&gt; Typography {:align &quot;center&quot; :variant &quot;h4&quot;}
+     @(re-frame/subscribe [::events/day])]
+
+    [:&gt; Typography {:align &quot;center&quot; :variant &quot;h1&quot;}
+     @(re-frame/subscribe [::events/time])]
+
+    [:&gt; Grid {:container true :spacing 0 :direction &quot;row&quot;
+              :justify &quot;center&quot; :alignItems &quot;center&quot;}
+     [:&gt; Grid {:item true :xs 6}
+      [:&gt; Typography {:align &quot;center&quot; :variant &quot;h6&quot;}
+       @(re-frame/subscribe [::events/time-pt])]
+      [:&gt; Typography {:align &quot;center&quot; :variant &quot;body2&quot;}
+       &quot;San Francisco&quot;]]
+     [:&gt; Grid {:item true :xs 6}
+      [:&gt; Typography {:align &quot;center&quot; :variant &quot;h6&quot;}
+       @(re-frame/subscribe [::events/time-ct])]
+      [:&gt; Typography {:align &quot;center&quot; :variant &quot;body2&quot;}
+       &quot;Chicago&quot;]]]
+
+    (let [{:keys [sunrise sunset]}
+          @(re-frame/subscribe [::events/sun])]
+      [:&gt; Typography {:align &quot;center&quot;
+                      :variant &quot;h6&quot;}
+       [:i {:class &quot;wi wi-sunrise&quot;}]
+       sunrise
+       [:i {:class &quot;wi wi-sunset&quot;}]
+       sunset])]])
+</code></pre>
+<p>which makes liberal use of the <code>Typography</code> Material-UI component
+along with a nested <code>Grid</code> component to show the ET/CT timezones
+side-by-side. The only missing pieces are some minor styling to fix
+the height of the <code>Card</code> so it fills the containing <code>Grid</code>.</p>
+<p>Nested within the React components that make up the clock view are
+<code>re-frame/subscribe</code> functions which bind the view to re-frame
+<em>subscriptions</em> which are, effectively, listeners for re-frame
+<em>events</em>. Subscriptions and events are commonly defined in
+<code>src/cljs/&lt;project&gt;/events.cljs</code>. The clock events and subscriptions
+for the main time display are comparatively simple:</p>
+<pre><code class="clojure">(re-frame/reg-event-db
+ ::timer
+ (fn [db _]
+   (assoc db :clock (js/Date.))))
+
+(re-frame/reg-sub
+ ::clock
+ (fn [db _]
+   (:clock db)))
+
+(re-frame/reg-sub
+ ::time
+ :&lt;- [::clock]
+ (fn [clock _]
+   (.toLocaleTimeString
+    clock
+    []
+    (clj-&gt;js {:hour &quot;numeric&quot; :minute &quot;numeric&quot; :hour12 true}))))
+</code></pre>
+<p>Subscriptions and events in re-frame are a <a href="https://day8.github.io/re-frame/subscriptions/">complex</a>
+topic, so this treatment will only begin to scratch the surface. In
+short, the <code>::timer</code> event--when triggered--will update the <code>:clock</code>
+key in the application's <code>db</code> state hash-map. The <code>::clock</code>
+subscription defined with <code>reg-sub</code> is a &quot;Layer 2&quot; extractor
+subscription that does nothing but pluck the <code>:clock</code> key back out of
+the application <code>db</code>. The <code>::time</code> subscription is a &quot;Layer 3&quot;
+materialized view of this extracted value (the <code>:&lt;- [::clock]</code> adds
+the subscription dependency), converting it to a string that is ready
+to be inserted into the rendered view. Internally, re-frame chains
+these subscriptions into a graph, updating all the Layer 2
+subscriptions when the db changes, and then updates only the changed
+Layer 3 subscriptions and their subscribed views, leaving everything
+else untouched.</p>
+<p>The remaining subscriptions are left as an exercise to the reader with
+spoilers available (isolated to a dedicated namespace) in the
+<a href="https://github.com/malloc47/cockpit/blob/ac0ba2f5c7d985aceca03fdb079050d498983587/src/cljs/cockpit/clock.cljs"><code>clock.cljs</code> file</a> in the source.</p>
+<p>To tie things together, we must continually trigger the <code>::timer</code>
+event for our clock to receive updates and subsequently be re-rendered
+in the view. For this, we turn to <a href="https://github.com/gadfly361/re-pollsive">re-pollsive</a>, a library that lets
+us trigger events based on a fixed time interval. After adding the
+library dependency to the <code>project.clj</code> file, we initialize it in the
+<code>src/cljs/&lt;project&gt;/core.cljs</code> file to continually send the <code>::timer</code>
+event:</p>
+<pre><code class="clojure">(defn init []
+  ...
+  (re-frame/dispatch [::poll/set-rules
+                      [{:interval                 1
+                        :event                    [::events/timer]
+                        :dispatch-event-on-start? true}]])
+  ...)
+</code></pre>
+<p>An <code>:interval</code> of 1 will update our clock every second.</p>
+<p>With all this in place, a <code>lein dev</code> will build and begin serving the
+application from <a href="http://localhost:8280">localhost:8280</a>, complete
+with hot-reloading to make iterating and tweaking the app seamless.</p>
+<p>The <a href="/building-a-personal-dashboard-in-clojurescript-part-2">next post</a> in this series will dive into the Weather card,
+which involves our first external API calls.</p>
+<table>
+<thead></thead>
+<tbody>
+<tr><td>Part 1</td><td><a href="/building-a-personal-dashboard-in-clojurescript-part-2">Part 2</a></td><td><a href="/building-a-personal-dashboard-in-clojurescript-part-3">Part 3</a></td></tr>
+</tbody>
+</table>
+
+    </div>
+  </div>
+</div>
+
+<div class="content">
+  <div class="content-wrap">
+    <p class="date">2019 <span class="date-dark">00</span>03 <span class="date-dark">00</span>14 </p>
+        <p class="social">
+      <a href="https://www.facebook.com/sharer.php?u=https%3A%2F%2Fwww.malloc47.com%2F&amp;t="
+	 target="_blank"
+	 rel="nofollow"
+	 title="Share on Facebook">F</a>
+      <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.malloc47.com%2F&amp;text=&amp;via=malloc47&amp;related=malloc47"
+	 target="_blank"
+	 title="Tweet"
+	 rel="nofollow">T</a>
+    </p>
+
+    <header><a href="/migrating-to-nixos/">Migrating to NixOS</a></header>
+    <div class="content-body">
+      <p>After running <a href="https://www.archlinux.org/">Arch Linux</a> for the last decade, I've finally made
+the jump to <a href="https://nixos.org/">NixOS</a>. For me, this means updating two VMs
+(VirtualBox and VMWare) and a bare-metal install (an aging MacBook
+Air).</p>
+<p>I've repurposed my old <a href="https://github.com/malloc47/config">config repo</a> to store both my dotfiles as
+well as the NixOS <code>configuration.nix</code> files.</p>
+<p>Since I was already making a big transition, I decided to take the
+opportunity to retool a few more things in my dev setup:</p>
+<table>
+<thead>
+<tr><th> </th><th>Old</th><th>New</th></tr>
+</thead>
+<tbody>
+<tr><td>OS</td><td>Arch Linux</td><td>NixOS</td></tr>
+<tr><td>Shell</td><td>Bash</td><td>Zsh</td></tr>
+<tr><td>Terminal</td><td>urxvt</td><td>Alacritty</td></tr>
+<tr><td>Multiplexer</td><td>screen</td><td>tmux</td></tr>
+<tr><td>Window Manager</td><td>XMonad</td><td>i3</td></tr>
+<tr><td>Editor</td><td>Emacs</td><td>Emacs</td></tr>
+</tbody>
+</table>
+<p>I initially wanted to make the jump from X11 to Wayland, but NixOS
+<a href="https://github.com/NixOS/nixpkgs/projects/11">isn't quite ready</a> just yet.</p>
+<p>My goal for this writeup is to document the rationale for making the
+switch, capture the stuff I wish I had known before diving into the
+Nix language, and describe the particulars of how I organize my new
+setup.</p>
+<h1 id="motivation">Motivation</h1>
+<p>While I lack a single compelling reason to make the jump, there are a
+few pain points with my Arch setup that, together, pushed me to give
+NixOS a shot:</p>
+<ul>
+<li>
+<p><strong>Falling behind on Arch changes.</strong> While I benefited a few times
+from Arch's rolling update process, in practice I've rarely found it
+was something I needed. Not staying on top of Arch updates
+invariably leads to painful upgrades that take time to work
+through. Taking snapshots of my VMs reduced a lot of this upgrade
+risk, but it takes more time than I'm willing to spend to upgrade my
+bare-metal Arch install after neglecting it for extended periods.</p>
+</li>
+<li>
+<p><strong>Package drift among machines.</strong> Having my VMs get slightly
+different versions of packages from my Linux laptop, or forgetting
+to install the same set of packages across all machines was a minor
+but consistent annoyance. I kept a list of arch packages that I'd
+move from machine to machine, but nothing forced me to audit that
+the installed packages matched the list.</p>
+</li>
+<li>
+<p><strong>Limited local install options.</strong> I've grown reliant on Docker for
+infrastructural components (e.g. Postgres), but being able to
+install specific dev tools on a per-project basis (I've been playing
+with <a href="https://www.qgis.org/">QGIS</a> recently) is something I've constantly found
+painful, the few times I've bothered at all.</p>
+</li>
+</ul>
+<h1 id="nix">Nix</h1>
+<p>The big ideas behind the Nix ecosystem are covered in <a href="https://nixos.org/nix/">detail
+elsewhere</a>; what was appealing to me in particular was Nix's
+emphasis on reproducibility, file-driven configuration, and functional
+approach to its package repository, nixpkgs. You can think of the Nix
+package manager as a hybrid of <code>apt-get</code> and Python's <code>virtualenv</code>
+with a sprinkling of <code>git</code>; you can use Nix to build multiple,
+isolated sets of packages on, say, a per-project basis, with the
+guarantee that Nix only needs to fetch (or build) shared dependencies
+once. Nix stores all built packages in the Nix store which serves as a
+local cache. Nix grafts together a collection of Linux directories
+(<code>bin</code>, <code>usr</code>, etc.) by symlinking the appropriate files contained in
+the packages that live in the Nix store. This isolated environment can
+be system-wide (in the case of NixOS), local to your user (<code>nix-env</code>)
+or tailed for a specific project (<code>nix-shell</code>).</p>
+<p><code>nix-shell</code> serves a few different roles in the Nix ecosystem, but one
+of those roles is to make dependencies defined in a &quot;derivation&quot;
+(Nix's version of a makefile) available for use in a shell. These
+derivations are used to define a hermetically-sealed environment for
+building a package as well as collecting the commands to configure and
+run a build. We can re-use just the environment-prep part of a
+derivation along with <code>nix-shell</code> to drop us into a terminal that has
+exactly the packages we want. Here's an example of a derivation for a
+TeX project:</p>
+<pre><code class="nix">with import &lt;nixpkgs&gt; {};
+
+stdenv.mkDerivation {
+  name = &quot;my-document&quot;;
+  buildInputs = with pkgs; [
+    texlive.combined.scheme-full
+  ];
+  shellHook = &quot;pdflatex document.tex&quot;
+}
+</code></pre>
+<p>With this derivation placed in <code>shell.nix</code>, running a <code>nix-shell</code> in
+the same directory will fetch the entirety of TeX Live (which is <a href="https://tex.stackexchange.com/questions/302676/how-large-is-the-full-install-of-texlive/323739">not
+small</a>)
+and make all the related files, configuration, tools, fonts, commands,
+etc. available in the shell. It then uses one of these tools
+(<code>pdflatex</code>) to run the &quot;build&quot; of <code>document.tex</code> to generate a
+PDF. Writing a full derivation file isn't necessary if you don't need
+to be dropped into a shell for further work. The following is
+equivalent to the derivation above, but does not keep TeX Live
+available in the shell after it is done building the document:</p>
+<pre><code class="nix">nix run nixpkgs.texlive.combined.scheme-full -c pdflatex document.tex
+</code></pre>
+<p>I only rarely need TeX, so being able to make TeX available on a
+per-project basis without having all its commands pollute my <code>PATH</code>
+when doing non-TeX work is useful. Going further, I can mix-and-match
+versions of Python, the JVM, Postgres, etc. independently for each
+project I have without having to use <code>sudo</code>.</p>
+<h1 id="nixpkgs">nixpkgs</h1>
+<p>While the Nix Expression Language is somewhat esoteric, the big ideas
+aren't far removed from features in mainstream functional
+languages. nixpkgs in particular can be conceptualized as a single
+large map (called an Attribute Set or attrset in Nix) from keys to
+derivations:</p>
+<pre><code class="nix">{
+  # &lt;snip&gt;
+  tmux = callPackage ../tools/misc/tmux { };
+  # &lt;snip&gt;
+}
+</code></pre>
+<p>You can see a meaty example of nixpkg's package list <a href="https://github.com/NixOS/nixpkgs/blob/master/pkgs/top-level/all-packages.nix">here</a>. This
+would normally be an unwieldy thing to build in memory on every
+interaction with the package manager, however Nix lazily loads the
+contents of this attrset. Nix even provides the option to make these
+attribute sets &quot;recursive&quot; allowing the values to reference sibling
+keys, e.g.</p>
+<pre><code class="nix">rec { a = 2; b = a+3; }
+</code></pre>
+<p>nixpkgs provides <a href="https://nixos.org/nixos/nix-pills/nixpkgs-overriding-packages.html">facilities</a> to change or update existing
+packages with custom configuration, and add new entries to the package
+attrset. It does this by way of &quot;overlays&quot; which are a <a href="https://r6.ca/blog/20140422T142911Z.html">fixed
+point</a> over the package attrset. Nix's approach of effectively
+rebuilding a facsimile of the <a href="https://www.pathname.com/fhs/">FHS</a> on every run means that
+&quot;manual&quot; intervention to install things outside of a package manager
+(say, copying a <code>ttf</code> font into <code>/usr/share/fonts</code>) is not feasible,
+so having an easy way to fold your own set of custom packages into the
+package attrset is vital.</p>
+<p>The other important aspect to nixpkgs is that it is versioned in git
+(conveniently alongside NixOS in the same repo). The Nix CLI tools can
+fetch and install the latest set of packages by rolling the local
+clone of nixpkgs forward and then rebuilding your packages. Such a
+rebuild can apply to all the packages on your entire system, or just a
+particular derivation's local packages. This can work the other
+direction as well: If you prefer your package set to remain completely
+fixed, you can pin the nixpkgs clone to a particular git SHA. Stable
+releases of NixOS are handled as branches of the nixpkgs repo, which
+do get critical updates but avoid all the bleeding-edge changes that
+the <code>master</code> branch has.</p>
+<h1 id="nixos">NixOS</h1>
+<p>NixOS goes a step further and utilizes attrsets to configure the OS
+itself. Not unlike application configuration (for which there
+<a href="https://github.com/lightbend/config">are</a>
+<a href="https://github.com/markbates/configatron">numerous</a>
+<a href="https://github.com/weavejester/environ">libraries</a>), NixOS defines
+your OS in a series of one or more attrsets that are merged together;
+unlike traditional configuration approaches that use a
+last-merged-wins strategy, however, NixOS's <a href="https://nixos.wiki/wiki/NixOS:Properties">properties</a> provide
+per-field control over the priority of merges along with conditionals
+that control whether an option is merged or not.</p>
+<p>This approach to OS configuration is useful for defining options
+amongst a set of similar but not identical OSs. For my NixOS config,
+I've created a base <a href="https://github.com/malloc47/config/blob/cd6d1568f50c9b839f5146b45362cd6c4d857882/nixos/configuration.nix"><code>configuration.nix</code></a> file that contains common
+options that I want set across all my machines (abbreviated example
+here):</p>
+<pre><code class="nix">{ config, pkgs, ... }:
+{
+  time.timeZone = &quot;America/Chicago&quot;;
+  environment.systemPackages = with pkgs; [feh vim wget];
+  programs.zsh.enable = true;
+  users.users.johndoe.shell = pkgs.zsh;
+  # &lt;snip&gt;
+}
+</code></pre>
+<p>I then import this common file into host-specific files that each
+contain options specific to that particular machine, e.g. a VM host:</p>
+<pre><code class="nix">{ config, pkgs, ... }:
+{
+  imports = [ ./configuration.nix ];
+  services.vmwareGuest.enable = true;
+  users.users.johndoe.shell = mkOptionDefault pkgs.bash;
+  # &lt;snip&gt;
+}
+</code></pre>
+<p>Note the <code>mkOptionDefault</code> function that reduces the priority of the
+<code>pkgs.bash</code> value from the default of 100 to 1500. Had I left off
+<code>mkOptionDefault</code>, NixOS would complain that <code>johndoe.shell</code> was
+declared twice. However, by reducing its priority, the
+<code>configuration.nix</code>'s definition of <code>johndoe.shell = pkgs.zsh</code> will
+take priority, despite it not being the &quot;last&quot; merged. In actuality,
+NixOS builds the configuration as a whole without any notion of
+ordering, and will fail loudly if it gets two property values with
+equal priority.</p>
+<p>Notice above that the NixOS configuration includes option values that
+range from plain strings (e.g. <code>time.timeZone</code>) to more complex
+<code>services</code> that wire up nontrivial operations (schedule daemons to
+auto start, create systemd services, modprobe kernel modules,
+etc.). Unlike nixpkgs, NixOS doesn't try to specify all these
+configuration options in a giant flat file; rather, it splits options
+into <a href="https://nixos.wiki/wiki/NixOS_Modules">modules</a> which keep options grouped into logical
+units. Modules let you create new options easily, as well at attach a
+meaning to each option by doing things such as configuring other
+module's options, composing other modules together, writing files
+(also done through options, interestingly), and assorted other
+activities.</p>
+<p>To introduce new options that vary among my work VMs and my personal
+laptop, I've written a <a href="https://github.com/malloc47/config/blob/95eafec8373d9da302c5778964d4ce6e9c67ed22/modules/settings.nix">custom NixOS module</a>, which looks like</p>
+<pre><code class="nix">{config, pkgs, lib, ...}:
+
+with lib;
+
+{
+  options = {
+    settings = {
+      username = mkOption {
+        default = &quot;malloc47&quot;;
+        type = with types; uniq string;
+      };
+      email = mkOption {
+        default = &quot;malloc47@gmail.com&quot;;
+        type = with types; uniq string;
+      };
+      # more options
+    }
+  }
+}
+</code></pre>
+<p>This module lets me set a username for the machine being built, the
+keyboard layout I want to use, the email I want to use (for my git
+configuration), and many other options. I've written this module as a
+container of values for other modules to read, but takes no action
+itself (this is a trick so I can re-use the module for home-manger,
+discussed below).  However, upon importing this module elsewhere, I
+can set or retrieve values for these options to parameterize the rest
+of my configuration. E.g.,</p>
+<pre><code class="nix">users.users.${config.settings.username}.shell = pkgs.zsh;
+</code></pre>
+<p>NixOS helpfully keeps a <a href="https://nixos.org/nixos/manual/options.html">large index</a> of all options across all
+modules defined in the base NixOS system, which is also available in
+<code>man</code> page form on an installed system:</p>
+<pre><code class="bash">&gt; man configuration.nix
+</code></pre>
+<p>To utilize this declarative system configuration, NixOS provides the
+<code>nixos-rebuild</code> command which reads the <code>configuration.nix</code> file to
+find out what nixpkgs packages it requests, templates configuration
+files with the option values given, and eventually builds the entire
+file tree (as usual, symlinked back to the Nix store). NixOS persists
+every rebuild of your system as a sequentially numbered &quot;generation,&quot;
+which makes it easy to examine or roll back your entire system's
+configuration to a prior state. These generations are listed in the
+bootloader, so if you break something in your most recent generation,
+you can boot into a prior generation to find out what went wrong.</p>
+<h1 id="home-manager">home-manager</h1>
+<p>I've traditionally versioned my home folder's dotfiles in a git repo
+and deployed it with a <a href="/git-dotfile-versioning-across-systems">hand-rolled
+script</a>. Using a lightweight
+window manager (formerly XMonad) means that significant portions of my
+UI configuration live in my dotfiles, and this has led to increasingly
+awkward workarounds to make this configuration portable across the
+different hosts I regularly use. One example is controlling the Linux
+HiDPI settings which are, to put it mildly, <a href="https://wiki.archlinux.org/index.php/HiDPI">a mess</a>. I specify a
+slew of font tweaks, scaling factors, and DPI settings among half a
+dozen dotfiles. This makes it difficult to port my dotfiles from one
+machine to another.</p>
+<p>The formal Nix ecosystem doesn't (<a href="https://github.com/NixOS/nixpkgs/pull/9250">yet</a>) have a systematic
+approach for writing files directly to a home folder. It <em>can</em> place
+arbitrary files in an <code>/etc</code> folder. If you're the sole user of your
+machine and the application you want to configure looks at an <code>/etc</code>
+directory, you could have NixOS write your dotfiles there and forego
+keeping them in your home folder at all. My use case unfortunately
+doesn't fit neatly into these constraints; I have enough
+home-folder-only applications that an <code>/etc</code>-based approach isn't
+viable.</p>
+<p>The most Nix-native experience I've found for managing dotfiles is
+<a href="https://github.com/rycee/home-manager">home-manager</a>. It is not only written and managed via the Nix
+Expression Language, but it follows the same philosophy as the rest of
+NixOS. This includes a similar approach for splitting configuration
+into modules and, in fact, it supports importing my custom module
+mentioned above. Though home-manager can be run with a separate
+<code>home.nix</code> file and a <code>home-manager</code> CLI utility to trigger &quot;rebuilds&quot;
+of your home folder, it additionally exposes a <a href="https://github.com/rycee/home-manager/pull/97">NixOS module</a> that
+can be used in a system-level <code>configuration.nix</code> file to rebuild your
+home folder following a system-wide rebuild. Being the sole user of my
+systems, having NixOS and home-manager work in lockstep is preferable
+for me.</p>
+<p>home-manager encompasses more than just copying dotfiles to your home
+folder. Some broad use cases include:</p>
+<ul>
+<li>Installing packages locally for your user</li>
+<li>Placing dotfiles in your home folder</li>
+<li>Generating dotfiles from a declarative configuration</li>
+<li>Creating per-user systemd services (I use this for <code>emacs --daemon</code>,
+and it is quite handy).</li>
+</ul>
+<p>It does all this by building a single package, <code>home-manager-path</code>,
+that includes all the configured local packages and dotfiles. It then
+installs this package into your local Nix environment (traditionally
+managed by <code>nix-env</code>). Similar to how the rest of Nix works, each
+dotfile is symlinked into your home folder from the
+<code>home-manager-path</code> package contained in the Nix store. This works
+similarly to how my old, hacky script managed my dotfiles.</p>
+<p>The choice between having home-manager generate your dotfiles
+whole-cloth, or writing your dotfiles by hand is entirely up to
+you. If you're like me and have pre-written dotfiles sitting around,
+it's easy to re-use these by</p>
+<pre><code class="nix">home.file.&quot;.inputrc&quot;.source = ./.inputrc;
+</code></pre>
+<p>which insures that the <code>.inputrc</code> file in the same folder as the
+<code>home.nix</code> file is deployed to <code>~/.inputrc</code> in your home
+folder. home-manager supports more complex parameters--my emacs
+configuration has too many files to enumerate explicitly, and
+home-manager can symlink the entire directory to my home folder,
+creating nested directories as necessary:</p>
+<pre><code class="nix">home.file.&quot;.emacs.d&quot; = {
+  source = ./.emacs.d;
+  recursive = true;
+};
+</code></pre>
+<p>home-manager lets me specify file contents directly inside of
+<code>home.nix</code>, which is useful if I want to reference options defined in
+the aforementioned custom module:</p>
+<pre><code class="nix">home.file.&quot;fonts.el&quot; = {
+  target = &quot;.emacs.d/config/fonts.el&quot;;
+  text = ''
+    (provide 'fonts)
+    (set-frame-font &quot;${config.settings.fontName}-${toString config.settings.fontSize}&quot;)
+    (setq default-frame-alist '((font . &quot;${config.settings.fontName}-${toString config.settings.fontSize}&quot;)))
+  '';
+};
+</code></pre>
+<p>Since I've never had an extensive <code>.tmux.conf</code> file, I can use
+home-manger to generate it for me:</p>
+<pre><code class="nix">programs.tmux = {
+  enable = true;
+  terminal = &quot;tmux-256color&quot;;
+  shortcut = &quot;u&quot;;
+};
+</code></pre>
+<p>which creates a <code>~/.tmux.conf</code> file with (among other contents):</p>
+<pre><code>set  -g default-terminal &quot;tmux-256color&quot;
+
+# rebind main key: C-u
+unbind C-b
+set -g prefix C-u
+bind u send-prefix
+bind C-u last-window
+</code></pre>
+<p>The ability to have disparate applications with varied configuration
+languages wrapped by a single, type safe, functional meta-language is
+cool. If the idea of writing Nix code to generate your dotfiles is too
+weird, you can always fall back to having it symlink your hand-rolled
+dotfiles. If you prefer a hybrid, most home-manager modules have an
+<code>extra</code> option (or similar) to interleave arbitrary configuration in
+the dotfiles it generates.</p>
+<h1 id="layout">Layout</h1>
+<p>My newly restructured <a href="https://github.com/malloc47/config">config repo</a> is now laid out with the
+following directories:</p>
+<ul>
+<li><code>/nixos/configuration.nix</code> : general OS configuration that applies
+to all hosts
+<ul>
+<li>Imports <code>home.nix</code> to build my home folder</li>
+<li>Imports overlays from <code>pkgs/</code></li>
+</ul>
+</li>
+<li><code>hosts/</code> : host specific configuration:
+<ul>
+<li>Imports hardware configuration from <code>hardware/</code></li>
+<li>Imports general NixOS configuration from <code>nixos/</code></li>
+<li>Imports custom modules from <code>modules/</code></li>
+</ul>
+</li>
+<li><code>hardware/</code> : low-level configuration (file systems, kernel modules,
+etc.) for use by individual hosts</li>
+<li><code>config/home.nix</code> + dotfiles
+<ul>
+<li>Imports keyboard layout from <code>xkb/</code></li>
+<li>Imports custom modules from <code>modules/</code></li>
+</ul>
+</li>
+<li><code>modules/</code> : my custom configuration module, and any future modules</li>
+<li><code>personal/</code> : private git submodule for non-public dotfiles</li>
+<li><code>pkgs/</code> : overlays for custom packages</li>
+<li><code>xkb/</code> : keyboard layouts</li>
+</ul>
+<p>To bootstrap a new host after doing a vanilla install of NixOS, I need
+to:</p>
+<ol>
+<li>Generate the appropriate <code>hardware/</code> file (or re-use an existing
+one if the hardware matches).</li>
+<li>Customize a new <code>host/</code> file, including the options defined in
+<code>modules/settings.nix</code> to match the needs of the new machine
+(e.g. set a work email or change the default font size for HiDPI
+screens).</li>
+<li>Following this, I generally symlink the <code>host/&lt;hostname&gt;.nix</code> file
+to <code>/etc/nixos/configuration.nix</code> so that NixOS rebuilds don't have
+to be passed the file explicitly.</li>
+<li>Finally, running <code>nixos-rebuild</code> will construct the complete OS and
+my home folder with the exact set of packages and dotfiles I've
+defined for all of my machines.</li>
+</ol>
+<p>Alternatively, I could inject the configuration into the machine prior
+to doing a NixOS install or even build a custom NixOS ISO that
+includes my configuration in the image. Since bootstrapping my
+configuration is only something I've had to do once per platform, I
+haven't been compelled to optimize further yet.</p>
+<h1 id="conclusion">Conclusion</h1>
+<p>So far I've been happy with my NixOS setup; I do miss the ease of the
+<a href="https://aur.archlinux.org/">AUR</a> and the extensively documented <a href="https://wiki.archlinux.org/">ArchWiki</a>. Perhaps the
+most important change I've noticed is how much bolder I can be with
+toying on bare hardware; the few times I've messed up my system, I
+just boot back into the previous generation.</p>
+
+    </div>
+  </div>
+</div>
+
+<div class="content">
+  <div class="content-wrap">
+    <p class="date">2015 <span class="date-dark">00</span>02 <span class="date-dark">00</span>16 </p>
+        <p class="social">
+      <a href="https://www.facebook.com/sharer.php?u=https%3A%2F%2Fwww.malloc47.com%2F&amp;t="
+	 target="_blank"
+	 rel="nofollow"
+	 title="Share on Facebook">F</a>
+      <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.malloc47.com%2F&amp;text=&amp;via=malloc47&amp;related=malloc47"
+	 target="_blank"
+	 title="Tweet"
+	 rel="nofollow">T</a>
+    </p>
+
+    <header><a href="/jetty-jmx-in-clojure/">Jetty JMX in Clojure</a></header>
+    <div class="content-body">
+      <p>Embedded Jetty is one of the more popular servers for ring
+applications.  <a href="https://en.wikipedia.org/wiki/Java_Management_Extensions">JMX</a> can be useful for poking around the guts of
+Jetty, as well as making runtime config changes. Unfortunately,
+enabling JMX for an embedded Jetty isn't a straightforward config
+change, and the process for doing so in Clojure is largely
+undocumented. So this is the guide that I wish existed when I found
+the need to profile Jetty. If you'd rather skip the commentary, I've
+put up a <a href="https://github.com/malloc47/jetty-jmx">minimal clojure jmx-enabled server</a> for perusal.</p>
+<p>Most essentially, the version of Jetty that comes bundled in
+<code>ring-jetty-adapter</code> is <a href="https://github.com/ring-clojure/ring/blob/master/ring-jetty-adapter/project.clj#L9">too old</a> (currently 7.6.13) to expose
+meaningful JMX hooks. Thankfully there's a <a href="https://github.com/sunng87/ring-jetty9-adapter">modern ring adapter</a>
+that you can add to your dependency list:</p>
+<pre><code class="clojure">[info.sunng/ring-jetty9-adapter &quot;0.8.1&quot;]
+</code></pre>
+<p>which serves as a drop-in replacement for the official
+<code>ring-jetty-adapter</code>. Another relevant dependency is Jetty's JMX
+artifact:</p>
+<pre><code class="clojure">[org.eclipse.jetty/jetty-jmx &quot;9.2.7.v20150116&quot;]
+</code></pre>
+<p>The <code>jetty-jmx</code> version should match with the version of
+<code>jetty-server</code> provided by <code>ring-jetty9-adapter</code>.</p>
+<p>While editing <code>project.clj</code>, it's important enable JMX on the JVM
+level, and select a port:</p>
+<pre><code class="clojure">:jvm-opts [&quot;-Dcom.sun.management.jmxremote&quot;
+           &quot;-Dcom.sun.management.jmxremote.ssl=false&quot;
+           &quot;-Dcom.sun.management.jmxremote.authenticate=false&quot;
+           &quot;-Dcom.sun.management.jmxremote.port=8001&quot;]
+</code></pre>
+<p>Finally, the running Jetty server must opt-in to JMX by pointing to
+the appropriate &quot;MBean,&quot; which can be imported with:</p>
+<pre><code class="clojure">(ns jetty-jmx.core
+  (:require [ring.adapter.jetty9 :refer [run-jetty]])
+  (:import (java.lang.management ManagementFactory)
+           (org.eclipse.jetty.jmx MBeanContainer)))
+</code></pre>
+<p>The server can then be started with:</p>
+<pre><code class="clojure">(let [mb-container (MBeanContainer. (ManagementFactory/getPlatformMBeanServer))]
+    (doto (run-jetty app {:port 8000
+                          :join? false})
+      (.addEventListener mb-container)
+      (.addBean mb-container)))
+</code></pre>
+<p>which attaches the MBean to the running Jetty server. Since the
+<code>run-server</code> command calls <code>.start</code> on the <code>Server</code> object before
+returning it, it's important to configure <code>:join? false</code> to allow
+thread execution to continue, preventing the following
+<code>.addEventListener</code> and <code>.addBean</code> from being blocked.</p>
+<p>With all of this, it should now be possible to start the server and
+connect to the JMX port using <code>jconsole</code>:</p>
+<pre><code>jconsole localhost:8001
+</code></pre>
+<p>Relevant info will be under the <code>MBeans</code> tab. Useful fields include</p>
+<pre><code>org.eclipse.jetty.util.thread.queuedthreadpool.threads
+</code></pre>
+<p>for how many threads are allocated, and</p>
+<pre><code>org.eclipse.jetty.util.thread.queuedthreadpool.queueSize
+</code></pre>
+<p>to find out how many requests are waiting on threads.</p>
+
+    </div>
+  </div>
+</div>
+
+
+<nav id="pagination">
+  
+  
+  <a class="right" href="/page2/">Older &#8827;</a>
+  
+</nav>
+
+
+      </div>
+            <footer>
+	<div class="icons">
+	  <a href="/rss.xml" class="transparent rss"></a>
+	</div>
+	<div class="footer-padding">This site is licensed under <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0</a>.</div>
+      </footer>
+
+      </div>
+  </body>
+</html>

@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <!-- <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> -->
+    <title>malloc47/Anatomy of a Chrome Extension</title>
+    
+<meta name="keywords" content="">
+
+<meta property="og:url" content="https://www.malloc47.com/anatomy-of-a-chrome-extension/" />
+<meta property="og:title" content="Anatomy of a Chrome Extension" />
+<meta property="og:type" content="article" />
+
+    <meta name="viewport" content="width=720">
+    <link rel="preload" href="/font/Existence-Light-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Regular-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Italic-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Bold-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Inconsolata-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/assets/style.css">
+    <link id="day-css" rel="stylesheet" href="/assets/night.css" disabled>
+    <link id="night-css" rel="stylesheet" href="/assets/day.css" disabled>
+    <script src="/assets/main.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <div class="icons-left">
+      <canvas id="miniclock" width="50" height="50" class="selectable"></canvas>
+      <span id="toggle" class="transparent-light toggle selectable"></span>
+    </div>
+        <div class="icons">
+      <a href="mailto:malloc47@gmail.com" class="transparent gmail"></a>
+      <a href="https://www.github.com/malloc47" class="transparent github"></a>
+    </div>
+
+    <div id="container">
+            <header id="main-header">
+	<p>malloc(<span class="header-number"><a href="/">47</a></span>)</p>
+	<p class="header-name">&mdash;<a href="https://www.twitter.com/malloc47">Jarrell Waggoner</a>&mdash;</p>
+      </header>
+
+            <nav>
+      	<ul>
+      	  <li><a href="/" title="Home">Home</a></li>
+      	  <li><a href="/about" title="About">About</a></li>
+      	  <li><a href="/music" title="Music">Music</a></li>
+      	  <li><a href="/research" title="Research">Research</a></li>
+      	  <li><a href="/talks" title="Talks">Talks</a></li>
+      	  <li><a href="mailto:malloc47@gmail.com" title="Email">Contact</a></li>
+      	</ul>
+      </nav>
+
+      <div id="contents" role="main">
+        
+<div class="content">
+  <div class="content-wrap">
+    <p class="date">2012 <span class="date-dark">00</span>09 <span class="date-dark">00</span>15 </p>
+        <p class="social">
+      <a href="https://www.facebook.com/sharer.php?u=https%3A%2F%2Fwww.malloc47.com%2Fanatomy-of-a-chrome-extension%2F&amp;t=Anatomy+of+a+Chrome+Extension"
+	 target="_blank"
+	 rel="nofollow"
+	 title="Share on Facebook">F</a>
+
+      <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.malloc47.com%2Fanatomy-of-a-chrome-extension%2F&amp;text=Anatomy+of+a+Chrome+Extension&amp;via=malloc47&amp;related=malloc47"
+	 target="_blank"
+	 title="Tweet"
+	 rel="nofollow">T</a>
+    </p>
+
+    <header>Anatomy of a Chrome Extension</header>
+    <div class="content-body">
+      <p>I launched <a href="http://nonpartisan.me">nonpartisan.me</a> a few weeks back, which exists
+primarily in the form of a Google Chrome extension (there's a Firefox
+add-on too).  Since I released it with all of the <a href="https://github.com/malloc47/nonpartisan.me">source</a>, this
+makes it a great time to dissect the (very simple) code.  As you will
+notice from the site and the small bit of <a href="https://charlestoncitypaper.com/sick-of-politics-on-facebook-try-this-browser-tool/">press</a> it picked up,
+<code>nonpartisan.me</code> has a very simple premise: filter out political
+keywords from the various newsfeeds (specifically Facebook, Twitter,
+and Google+).</p>
+<p>This was my first attempt at a Chrome extension, and it's surprisingly
+straightforward.  All such extensions require a <code>manifest.json</code>, which
+looks like this for <code>nonpartisan.me</code>:</p>
+<pre><code class="javascript">{
+    &quot;name&quot;             : &quot;nonpartisan.me&quot;,
+    &quot;version&quot;          : &quot;0.2.1&quot;,
+    &quot;manifest_version&quot; : 2,
+    &quot;description&quot;      : &quot;Removes partisanship from your news feeds&quot;,
+    &quot;icons&quot;            : { &quot;16&quot;: &quot;icon16.png&quot;,
+                           &quot;48&quot;: &quot;icon48.png&quot;,
+                          &quot;128&quot;: &quot;icon128.png&quot; },
+    &quot;homepage_url&quot;     : &quot;https://nonpartisan.me&quot;,
+    &quot;page_action&quot;      : {&quot;default_icon&quot; : &quot;icon48.png&quot;,
+                          &quot;default_title&quot;: &quot;nonpartisan'ed&quot; },
+    &quot;permissions&quot;      : [&quot;tabs&quot;,
+                          &quot;https://www.facebook.com/&quot;,
+                          &quot;https://www.twitter.com/&quot;,
+                          &quot;https://plus.google.com/&quot;],
+    &quot;options_page&quot;     : &quot;options.html&quot;,
+    &quot;content_scripts&quot;  : [
+    {
+        &quot;matches&quot;: [&quot;*://*.facebook.com/*&quot;],
+        &quot;js&quot;     : [&quot;jquery.js&quot;,&quot;common.js&quot;,&quot;fb.js&quot;,&quot;nonpartisan.js&quot;],
+        &quot;run_at&quot; : &quot;document_end&quot;
+    },
+    {
+        &quot;matches&quot;: [&quot;*://twitter.com/*&quot;],
+        &quot;js&quot;     : [&quot;jquery.js&quot;,&quot;common.js&quot;,&quot;tw.js&quot;,&quot;nonpartisan.js&quot;],
+        &quot;run_at&quot; : &quot;document_end&quot;
+    },
+    {
+        &quot;matches&quot;: [&quot;*://plus.google.com/*&quot;],
+        &quot;js&quot;     : [&quot;jquery.js&quot;,&quot;common.js&quot;,&quot;gp.js&quot;,&quot;nonpartisan.js&quot;],
+        &quot;run_at&quot; : &quot;document_end&quot;
+    }],
+    &quot;background&quot;: {&quot;scripts&quot;   : [&quot;common.js&quot;,&quot;background.js&quot;],
+                   &quot;persistent&quot;: false }
+}
+</code></pre>
+<p>The real meat here is <code>content_scripts</code>, which lists the javascript we
+wish to trigger after a page is loaded, <code>greasemonkey</code>-style.  A
+particularly nice feature of content scripts are that they work in an
+isolated environment separate from any javascript that the page itself
+may include.  Thus we can add <code>jquery</code> to the list of javascript that
+is run without fear of clashing with a page's global namespace.</p>
+<p>You can think of every element in the <code>&quot;js&quot;</code> array as a separate
+<code>&lt;script&gt;</code> tag in an <code>HTML</code> page, so the files are loaded in the given
+order, all into a single namespace.  Rather clumsily, I chose to
+simply put a callback module (which is called <code>plugin</code> here) in the
+individual <code>fb.js</code>, <code>tw.js</code>, and <code>gp.js</code> files which is then used by
+the core component, <code>nonpartisan.js</code>, as a simple means of avoiding
+any hard-coded per-site values in the actual filtering code.</p>
+<p>With this, and the pseudo-regex <code>&quot;matches&quot;</code> field that specifies which
+pages trigger the content script, we can run arbitrary code on
+websites we specify.  For <code>nonpartisan.me</code>, the filtering code looks
+like this:</p>
+<pre><code class="javascript">&quot;use strict&quot;;
+var nonpartisan = function(plugin) {
+
+    function nonpartisan (watch,parent,keywords) {
+        function kill (parent,removeList){
+            $(parent).each(function () {
+                var el = $(this);
+                if(el.css('display') !== 'none') {
+                    el.find('*').each(function () {
+                        var toCheck = $(this).text().toLowerCase();
+                        if(toCheck.length &gt; 0 &amp;&amp;
+                           (removeList.some(function (value) {
+                               return (toCheck.search(&quot;\\b&quot;+value.toLowerCase()+&quot;\\b&quot;) &gt;=0);
+                           }))
+                          ) {
+                            el.css({'display':'none'});
+                            return false;
+                        }
+                    });
+                }
+            });
+        }
+
+        if($(parent) &amp;&amp; $(watch)) {
+            var numChildren = $(parent).children().length;
+            setInterval(function () {
+                var newNumChildren = $(parent).children().length;
+                if(numChildren !== newNumChildren) {
+                    kill(parent,keywords);
+                    numChildren = newNumChildren;
+                }
+            },
+                        500);
+            kill(parent,keywords);
+        }
+    }
+
+    // get parameters from plugin and trigger nonpartisan() here...
+
+}(plugin);
+</code></pre>
+<p>The first chunk--the <code>kill</code> function--works as advertised: given a
+parent element and a set of keywords, the function iterates over every
+child element and determines if any of the nested elements within
+(i.e. <code>el.find('*')</code>) contains any of the keywords.  Instead of
+deleting <code>DOM</code> nodes, which may break the page's own javascript (I
+discovered this the hard way), it's easier to instead call
+<code>el.css({'display':'none});</code> to simply hide unwanted elements.  For
+efficiency, the <code>forEach</code> terminates as soon any any nested child
+returns a match, potentially saving a small amount of needless
+searching.</p>
+<p>The second chunk starts a timer (if indeed the parent is even found on
+the current page) that checks if the number of children of the parent
+element has changed and, if so, re-triggers the filtering process to
+determine if there are any new children to be hidden.  This helps
+handle <code>AJAX</code>-driven sites, like the &quot;infinite scrolling&quot; facebook
+newsfeed, which may mutate the <code>DOM</code> at any time.  Both of these
+functions are wrapped up into another easy-to-call function inside of
+the high-level <code>nonpartisan</code> module.</p>
+<p>And that really is all there is to a typical <code>greasemonkey</code>-like
+Chrome extension, but that's certainly not the end of what a complete
+and helpful extension can provide.  The trickier bit is persisting
+configuration options.  The downside of sandboxing content scripts is
+that they exist in a transient execution context, meaning there's no
+<code>localStorage</code> to persist program options.  The details of the
+plumbing used to kick-off the process and handle options were omitted
+from the above snippet, so we'll dig more into this now to illustrate
+how to handle persistent options.</p>
+<p>Chrome provides a nice solution to the problem of not having
+<code>localStorage</code> available to content scripts by providing a
+<code>background</code> script which <em>does</em> have its own <code>localStorage</code>, which it
+can transmit to a content script via the <code>chrome.extension.onMessage</code>
+listener.  We can then fill in the omitted component of the above
+snippet with:</p>
+<pre><code class="javascript">chrome.extension.sendMessage({method: &quot;config&quot;}, function (response) {
+    if(!response.sites[plugin.site]) return;
+    var l = response.filter;
+    if(l &amp;&amp; l.length&gt;0) {
+        plugin.cb(l,nonpartisan);
+    }
+    // get default values from common.js
+    else {
+        l = [];
+        for(var index in choices) {
+            l = l.concat(choices[index]);
+        }
+        plugin.cb(l,nonpartisan);
+    }
+});
+</code></pre>
+<p>This sends a message, requesting <code>&quot;config&quot;</code> from the <code>background.js</code>
+script, which returns, among other things, the list of keywords we
+wish to filter.  This list was saved in <code>localStorage</code> in
+<code>background.js</code>'s execution context.  Recall that <code>plugin</code> is the
+module that specifies the particular settings for the page being
+filtered.  Thus we pass along the list of words to filter and the
+<code>nonpartisan()</code> callback function to the <code>plugin</code> module, and it
+subsequently executes <code>nonpartisan()</code> on the appropriate elements on
+the <code>DOM</code>.  The <code>background.js</code> file used in <code>nonpartisan.me</code> is a bit
+more <a href="https://github.com/malloc47/nonpartisan.me/blob/master/chrome/background.js">involved</a>, but it nonetheless essentially acts as a broker,
+converting Chrome's internal message-passing API calls to
+<code>localStorage</code> requests.</p>
+<p>Of course, there's only so much utility to be gained from
+<code>localStorage</code> without supplying the user with the ability to
+configure the various options that may be saved in therein.  This is
+done by a typical <code>html</code> page, specified by <code>&quot;options_page&quot;</code>.  Since
+there's not much magic there--it's just a plain html page with enough
+javascript to persist the settings--I will omit the gory details,
+which you can poke around yourself in <a href="https://github.com/malloc47/nonpartisan.me/blob/master/chrome/options.js">the</a> <a href="https://github.com/malloc47/nonpartisan.me/blob/master/chrome/background.js">repository</a>, if
+you're so inclined.</p>
+<p>So that's an extension.  Writing the above was literally a matter of
+minutes and some quality time with the Chrome API specifications.  As
+is always the case (especially when I'm working outside of my area of
+expertise, say with making the amateurish logo), the real work is
+doing the little bits of spit-and-polish to handle the various
+configuration options, throwing together the webpage, creating the
+icons and promotional images for the <a href="https://chrome.google.com/webstore/detail/ninebcppidndhampaggnjbijpacoadgg">Chrome Web Store</a>, etc.  But
+it's still good to know that the Chrome team has made the
+extension-building process as simple and well <a href="https://developer.chrome.com/extensions/docs.html">documented</a> as they
+have.</p>
+
+    </div>
+  </div>
+      <div class="share">
+      <a href="https://twitter.com/share" class="twitter-share-button" data-via="malloc47">Tweet</a>
+    </div>
+
+</div>
+
+      </div>
+            <footer>
+	<div class="icons">
+	  <a href="/rss.xml" class="transparent rss"></a>
+	</div>
+	<div class="footer-padding">This site is licensed under <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0</a>.</div>
+      </footer>
+
+      </div>
+  </body>
+</html>

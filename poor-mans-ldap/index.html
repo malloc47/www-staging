@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <!-- <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> -->
+    <title>malloc47/Poor Man&#39;s LDAP</title>
+    
+<meta name="keywords" content="">
+
+<meta property="og:url" content="https://www.malloc47.com/poor-mans-ldap/" />
+<meta property="og:title" content="Poor Man&#39;s LDAP" />
+<meta property="og:type" content="article" />
+
+    <meta name="viewport" content="width=720">
+    <link rel="preload" href="/font/Existence-Light-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Regular-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Italic-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Bold-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Inconsolata-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/assets/style.css">
+    <link id="day-css" rel="stylesheet" href="/assets/night.css" disabled>
+    <link id="night-css" rel="stylesheet" href="/assets/day.css" disabled>
+    <script src="/assets/main.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <div class="icons-left">
+      <canvas id="miniclock" width="50" height="50" class="selectable"></canvas>
+      <span id="toggle" class="transparent-light toggle selectable"></span>
+    </div>
+        <div class="icons">
+      <a href="mailto:malloc47@gmail.com" class="transparent gmail"></a>
+      <a href="https://www.github.com/malloc47" class="transparent github"></a>
+    </div>
+
+    <div id="container">
+            <header id="main-header">
+	<p>malloc(<span class="header-number"><a href="/">47</a></span>)</p>
+	<p class="header-name">&mdash;<a href="https://www.twitter.com/malloc47">Jarrell Waggoner</a>&mdash;</p>
+      </header>
+
+            <nav>
+      	<ul>
+      	  <li><a href="/" title="Home">Home</a></li>
+      	  <li><a href="/about" title="About">About</a></li>
+      	  <li><a href="/music" title="Music">Music</a></li>
+      	  <li><a href="/research" title="Research">Research</a></li>
+      	  <li><a href="/talks" title="Talks">Talks</a></li>
+      	  <li><a href="mailto:malloc47@gmail.com" title="Email">Contact</a></li>
+      	</ul>
+      </nav>
+
+      <div id="contents" role="main">
+        
+<div class="content">
+  <div class="content-wrap">
+    <p class="date">2012 <span class="date-dark">00</span>08 <span class="date-dark">00</span>11 </p>
+        <p class="social">
+      <a href="https://www.facebook.com/sharer.php?u=https%3A%2F%2Fwww.malloc47.com%2Fpoor-mans-ldap%2F&amp;t=Poor+Man%27s+LDAP"
+	 target="_blank"
+	 rel="nofollow"
+	 title="Share on Facebook">F</a>
+
+      <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.malloc47.com%2Fpoor-mans-ldap%2F&amp;text=Poor+Man%27s+LDAP&amp;via=malloc47&amp;related=malloc47"
+	 target="_blank"
+	 title="Tweet"
+	 rel="nofollow">T</a>
+    </p>
+
+    <header>Poor Man&#39;s LDAP</header>
+    <div class="content-body">
+      <p>In addition to being a researcher and backend web developer, I've also
+worn the system administrator hat for a number of years.  While the
+likes of <a href="https://en.wikipedia.org/wiki/Ldap"><code>LDAP</code></a>, <a href="https://en.wikipedia.org/wiki/Active_directory"><code>Active Directory</code></a>, <a href="https://en.wikipedia.org/wiki/Network_Information_Service"><code>NIS</code></a>, and their
+ilk can work quite well for managing medium-to-large networks, I've
+more often been tasked with managing small-scale (&lt; 20 machines)
+heterogeneous Linux networks, where deploying <code>LDAP</code> with full
+<code>Kerberos</code> authentication would be overkill.  Typical requirements
+I've encountered in small lab settings are simple user account and
+home folder sharing, and (relatively) similar package installations.</p>
+<p>With this in mind, I did what probably every sysadmin in the same
+situation would do: scrape together a simple set of scripts to handle
+basic file synchronization for me.  Specifically, I noticed two
+prevalent requirements among config files being synced:</p>
+<ul>
+<li>
+<p>machines and/or distros have a common header or footer that must be
+included (e.g., a list of system users in <code>/etc/passwd</code>), and</p>
+</li>
+<li>
+<p>specific machines (e.g., servers) shouldn't have some files synced
+with the rest of the machines (e.g., file shares might be different
+on a server).</p>
+</li>
+</ul>
+<p>Thus, <a href="https://github.com/malloc47/pmldap"><code>Poor Man's LDAP</code></a> was born.</p>
+<p>While nothing more than a collection of scripts--no different than
+what many other sysadmins have implemented, in all likelihood--they
+will hopefully be of use for those who, like me, are graduate students
+or otherwise non-full-time sysadmins that don't have time to do things
+the &quot;right&quot; way.</p>
+<p>I'm dogfooding <code>pmldap</code> on my research lab's network, where we
+(currently) have 5 Fedora machines (various versions between 10 and
+16) and 5 Debian machines (all on stable).  Since my recent
+<a href="https://github.com/malloc47/pmldap/commit/ab8918c17f22d2a9dabd6ea9ca97b39c9cdc968a">patch</a>, <code>pmldap</code> now supports groups, which are useful for running
+<code>yum</code> commands only on the Fedora machines and <code>apt</code> commands on only
+the Debian boxes.  Files being synchronized include: <code>fstab</code>, <code>group</code>,
+<code>hosts</code>, <code>hosts.allow</code>, <code>hosts.deny</code>, <code>passwd</code>, <code>shadow</code>, and
+<code>sudoers</code>.</p>
+<p>Also in the repo are a few convenience tools that I've found useful:</p>
+<ul>
+<li>
+<p><code>authorize-machine</code> bootstraps a machine by setting up ssh keys</p>
+</li>
+<li>
+<p><code>setup</code> bootstraps config files from a remote machine so they can be
+merged with the desired additions</p>
+</li>
+<li>
+<p><code>cmd</code> runs an arbitrary command on all machines (or a particular
+group of machines)</p>
+</li>
+<li>
+<p><code>useradd</code> is a feature-incomplete reimplementation of the native
+<code>useradd</code> command that works on local <code>passwd</code>, <code>shadow</code>, and
+<code>group</code> files to add new users that can later be synchronized across
+the network</p>
+</li>
+</ul>
+<p>Since I hadn't stumbled across something of this scope to fit the
+small-scale-network use case, I'm hopeful that <code>pmldap</code> will be of use
+to anyone in a similar situation.</p>
+<p>You'll find it on gitub <a href="https://github.com/malloc47/pmldap">here</a>.</p>
+
+    </div>
+  </div>
+      <div class="share">
+      <a href="https://twitter.com/share" class="twitter-share-button" data-via="malloc47">Tweet</a>
+    </div>
+
+</div>
+
+      </div>
+            <footer>
+	<div class="icons">
+	  <a href="/rss.xml" class="transparent rss"></a>
+	</div>
+	<div class="footer-padding">This site is licensed under <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0</a>.</div>
+      </footer>
+
+      </div>
+  </body>
+</html>

@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <!-- <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> -->
+    <title>malloc47/Preprocessors and Graphviz</title>
+    
+<meta name="keywords" content="">
+
+<meta property="og:url" content="https://www.malloc47.com/preprocessors-and-graphviz/" />
+<meta property="og:title" content="Preprocessors and Graphviz" />
+<meta property="og:type" content="article" />
+
+    <meta name="viewport" content="width=720">
+    <link rel="preload" href="/font/Existence-Light-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Regular-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Italic-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Bold-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Inconsolata-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/assets/style.css">
+    <link id="day-css" rel="stylesheet" href="/assets/night.css" disabled>
+    <link id="night-css" rel="stylesheet" href="/assets/day.css" disabled>
+    <script src="/assets/main.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <div class="icons-left">
+      <canvas id="miniclock" width="50" height="50" class="selectable"></canvas>
+      <span id="toggle" class="transparent-light toggle selectable"></span>
+    </div>
+        <div class="icons">
+      <a href="mailto:malloc47@gmail.com" class="transparent gmail"></a>
+      <a href="https://www.github.com/malloc47" class="transparent github"></a>
+    </div>
+
+    <div id="container">
+            <header id="main-header">
+	<p>malloc(<span class="header-number"><a href="/">47</a></span>)</p>
+	<p class="header-name">&mdash;<a href="https://www.twitter.com/malloc47">Jarrell Waggoner</a>&mdash;</p>
+      </header>
+
+            <nav>
+      	<ul>
+      	  <li><a href="/" title="Home">Home</a></li>
+      	  <li><a href="/about" title="About">About</a></li>
+      	  <li><a href="/music" title="Music">Music</a></li>
+      	  <li><a href="/research" title="Research">Research</a></li>
+      	  <li><a href="/talks" title="Talks">Talks</a></li>
+      	  <li><a href="mailto:malloc47@gmail.com" title="Email">Contact</a></li>
+      	</ul>
+      </nav>
+
+      <div id="contents" role="main">
+        
+<div class="content">
+  <div class="content-wrap">
+    <p class="date">2012 <span class="date-dark">00</span>04 <span class="date-dark">00</span>07 </p>
+        <p class="social">
+      <a href="https://www.facebook.com/sharer.php?u=https%3A%2F%2Fwww.malloc47.com%2Fpreprocessors-and-graphviz%2F&amp;t=Preprocessors+and+Graphviz"
+	 target="_blank"
+	 rel="nofollow"
+	 title="Share on Facebook">F</a>
+
+      <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.malloc47.com%2Fpreprocessors-and-graphviz%2F&amp;text=Preprocessors+and+Graphviz&amp;via=malloc47&amp;related=malloc47"
+	 target="_blank"
+	 title="Tweet"
+	 rel="nofollow">T</a>
+    </p>
+
+    <header>Preprocessors and Graphviz</header>
+    <div class="content-body">
+      <p><code>Graphviz</code> is a useful toolset for describing and rendering graphs.
+One of the features the graphviz language doesn't have, however, is a
+<code>C</code>-like preprocessor to <code>#include</code> files.  Which, granted, isn't a
+particularly common use case when building graphs, but one I found
+desirable when dealing with a large number of graphs with a shared
+subset of nodes, differing by how they are connected.</p>
+<p>Initially, I grafted together an unwieldy <a href="https://gist.github.com/2324425">script</a> that used an
+ugly <code>grep</code>+<code>sed</code> combination to grab the line number and substitute
+the included file contents: essentially a poor man's preprocessor.
+Thankfully, to the rescue was a particularly useful <a href="https://gist.github.com/2037497">gist</a>
+(initially illustrated with JavaScript) I serendipitously found
+on <a href="https://www.reddit.com/r/programming/comments/qxn73/mixing_javascript_and_the_cpreprocessor/">Reddit</a>. The key call being this:</p>
+<pre><code>cpp -P -undef -Wundef -std=c99 -nostdinc -Wtrigraphs \
+    -fdollars-in-identifiers -C &lt; input.dot &gt; output.dot
+</code></pre>
+<p>In your input <code>.dot</code> file, standard <code>C</code> include syntax</p>
+<pre><code class="c">#include &quot;common.doth&quot;
+</code></pre>
+<p>will work as expected, despite the fact that it is a completely
+different language.</p>
+<p>This solution is highly verbose if you don't drop it in a build chain
+and forget about it.  Which is straightforward using a standard
+<a href="https://github.com/open-it-lab/ol-curriculum/blob/master/makefile">makefile</a>:</p>
+<pre><code class="make">SOURCES = $(wildcard *.dot)
+OBJECTS = $(SOURCES:.dot=.doto)
+IMAGES  = $(SOURCES:.dot=.png)
+
+all: $(IMAGES)
+
+%.png: %.doto
+	dot -Tpng $&lt; &gt; $@
+
+%.doto: %.dot
+	cpp -P -undef -Wundef -std=c99 -nostdinc -Wtrigraphs \
+		-fdollars-in-identifiers -C &lt; $&lt; | \
+		gvpr -c 'N[$$.degree==0]{delete(NULL,$$)}' &gt; $@
+
+clean:
+	-rm $(IMAGES) $(OBJECTS) *~
+</code></pre>
+<p>In the above example, I introduced an intermediate <code>doto</code> file
+(analogous to an object file) and <code>doth</code> (header file) to recreate a
+<code>C</code>-like build process.</p>
+<p>Another ingredient above is the piped invocation of <code>gvpr</code>, which
+removes nodes of degree 1 (so that included nodes that are not
+attached to anything in the current file will be ignored).  Remember
+that in <code>makefiles</code>, the <code>$</code> must be escaped by using
+<code>$$</code>. Unfortunately, the <code>delete</code> function in <code>gvpr</code> is <a href="https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=652952">broken</a> in
+a number of Debian-based distros (at least), but the latest version
+works bug-free in Arch.</p>
+<p>So, given a <code>nodes.doth</code> file with these contents:</p>
+<pre><code>    node1 [label = &quot;1&quot;];
+    node2 [label = &quot;2&quot;];
+    node3 [label = &quot;3&quot;];
+</code></pre>
+<p>and a <code>graph.dot</code> file as such:</p>
+<pre><code>graph g {
+    #include &quot;nodes.doth&quot;
+
+    node1 -- node2;
+    node2 -- node3;
+    node3 -- node1;
+}
+</code></pre>
+<p>the <code>makefile</code> will use <code>cpp</code> to generate the following intermediate
+file,</p>
+<pre><code>graph g {
+    node1 [label = &quot;1&quot;];
+    node2 [label = &quot;2&quot;];
+    node3 [label = &quot;3&quot;];
+    node1 -- node2;
+    node2 -- node3;
+    node3 -- node1;
+}
+</code></pre>
+<p>which will then be compiled by graphviz's <code>dot</code> command into an image.
+While obviously not necessary with this toy example, scaling up to
+more nodes shared by multiple graphs is much more pleasant when the
+nodes don't have to be duplicated in each graph.</p>
+<p>Very little of this is exclusive to graphviz, and is reasonable to
+extrapolate to other problems fairly easily.  And, since this
+literally uses the <code>C</code> preprocessor to do the job, there's many more
+tricks to be explored.</p>
+<p>Quite helpful to have on hand when the need arises, and a testament to
+the quality of <code>cpp</code> that it can be used for arbitrary metaprogramming
+in other languages.</p>
+
+    </div>
+  </div>
+      <div class="share">
+      <a href="https://twitter.com/share" class="twitter-share-button" data-via="malloc47">Tweet</a>
+    </div>
+
+</div>
+
+      </div>
+            <footer>
+	<div class="icons">
+	  <a href="/rss.xml" class="transparent rss"></a>
+	</div>
+	<div class="footer-padding">This site is licensed under <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0</a>.</div>
+      </footer>
+
+      </div>
+  </body>
+</html>

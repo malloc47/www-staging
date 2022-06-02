@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <!-- <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> -->
+    <title>malloc47/Man Page Readability</title>
+    
+<meta name="keywords" content="">
+
+<meta property="og:url" content="https://www.malloc47.com/man-page-readability/" />
+<meta property="og:title" content="Man Page Readability" />
+<meta property="og:type" content="article" />
+
+    <meta name="viewport" content="width=720">
+    <link rel="preload" href="/font/Existence-Light-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Regular-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Italic-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Bold-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Inconsolata-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/assets/style.css">
+    <link id="day-css" rel="stylesheet" href="/assets/night.css" disabled>
+    <link id="night-css" rel="stylesheet" href="/assets/day.css" disabled>
+    <script src="/assets/main.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <div class="icons-left">
+      <canvas id="miniclock" width="50" height="50" class="selectable"></canvas>
+      <span id="toggle" class="transparent-light toggle selectable"></span>
+    </div>
+        <div class="icons">
+      <a href="mailto:malloc47@gmail.com" class="transparent gmail"></a>
+      <a href="https://www.github.com/malloc47" class="transparent github"></a>
+    </div>
+
+    <div id="container">
+            <header id="main-header">
+	<p>malloc(<span class="header-number"><a href="/">47</a></span>)</p>
+	<p class="header-name">&mdash;<a href="https://www.twitter.com/malloc47">Jarrell Waggoner</a>&mdash;</p>
+      </header>
+
+            <nav>
+      	<ul>
+      	  <li><a href="/" title="Home">Home</a></li>
+      	  <li><a href="/about" title="About">About</a></li>
+      	  <li><a href="/music" title="Music">Music</a></li>
+      	  <li><a href="/research" title="Research">Research</a></li>
+      	  <li><a href="/talks" title="Talks">Talks</a></li>
+      	  <li><a href="mailto:malloc47@gmail.com" title="Email">Contact</a></li>
+      	</ul>
+      </nav>
+
+      <div id="contents" role="main">
+        
+<div class="content">
+  <div class="content-wrap">
+    <p class="date">2012 <span class="date-dark">00</span>02 <span class="date-dark">00</span>11 </p>
+        <p class="social">
+      <a href="https://www.facebook.com/sharer.php?u=https%3A%2F%2Fwww.malloc47.com%2Fman-page-readability%2F&amp;t=Man+Page+Readability"
+	 target="_blank"
+	 rel="nofollow"
+	 title="Share on Facebook">F</a>
+
+      <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.malloc47.com%2Fman-page-readability%2F&amp;text=Man+Page+Readability&amp;via=malloc47&amp;related=malloc47"
+	 target="_blank"
+	 title="Tweet"
+	 rel="nofollow">T</a>
+    </p>
+
+    <header>Man Page Readability</header>
+    <div class="content-body">
+      <p>Man pages are one of the staples of a healthy *nix diet, but having
+grown up with them, it didn't occur to me until recently to wonder how
+readable they really are. The de facto standard for readability
+has--for better or worse--converged to the <a href="https://en.wikipedia.org/wiki/Flesch%E2%80%93Kincaid_readability_test">Flesch–Kincaid</a> test,
+which (a particular variant) ranks readability as a &quot;grade level,&quot;
+roughly corresponding to an American school grade. Getting a
+readability score for a manpage is as simple as piping our man page to
+the GNU <em>style</em> program (not installed on many distros, I discovered,
+and typically available in the &quot;diction&quot; package).</p>
+<pre><code>&gt; man /usr/share/man/man1/git.1.gz | style
+readability grades:
+        Kincaid: 7.0
+        ARI: 4.4
+        Coleman-Liau: 4.0
+        ...
+</code></pre>
+<p>Notice that man can read in the (tarzipped) man source file (typically
+located in <code>/usr/share/man/man?</code> folders) rather than having to type
+the executable name.</p>
+<p>Since we're only concerned with the Kincaid score, we can apply a
+smattering of grep+awk to extract it.</p>
+<pre><code>man /usr/share/man/man1/git.1.gz | style | grep Kincaid | awk '{print $2'}
+</code></pre>
+<p>And finally, looping over all the installed man pages (+sed to trim
+out short sentences, headers, etc.) gives us one big file, from which
+we can get readability statistics.</p>
+<pre><code>for i in `ls -d -1 /usr/share/man/man?/*` ; do echo -n &quot;$i &quot; ; man $i | tr '\n' ' ' | sed 's/\./\.\n/g' | sed -e 's/^[ \t]*//' | sed '/.\{3\}/!d' | grep Kincaid | awk '{print $2}' ; done &gt; ~/flesch-kincaid
+</code></pre>
+<p>More awk magic will give us an average and standard deviation.</p>
+<pre><code>&gt; awk '{avg+=$2} END {print avg/NR}' ~/flesch-kincaid
+9.08134
+&gt; awk '{sum+=$2; sumsq+=$2*$2} END {print sqrt(sumsq/NR - (sum/NR)**2)}' ~/flesch-kincaid
+10.3857
+</code></pre>
+<p>Perhaps surprisingly, the average readability of the man pages on my
+machine is below the college level. More unexpectedly, the standard
+deviation is very high, indicating that there's a wide range of
+readability from one man page to another. The page with the most
+absurdly large readability score</p>
+<pre><code>grep `awk '$2&gt;m{m=$2}END{print m}' ~/flesch-kincaid` ~/flesch-kincaid
+</code></pre>
+<p>consist almost entirely of code and API documentation.</p>
+<p>Of course, this does not take into account a myriad of confounding
+factors: some non-English language pages crept into the list, which
+kick out bogus scores by the Flesch–Kincaid metric, man pages have
+non-standard formatting (e.g. command switches) which aren't
+considered in the metric, etc. But knowing the general (or at least
+average) education level required to comprehend man pages is worth
+considering as more mainstream distributions bring with them an influx
+of younger and less experienced users.</p>
+
+    </div>
+  </div>
+      <div class="share">
+      <a href="https://twitter.com/share" class="twitter-share-button" data-via="malloc47">Tweet</a>
+    </div>
+
+</div>
+
+      </div>
+            <footer>
+	<div class="icons">
+	  <a href="/rss.xml" class="transparent rss"></a>
+	</div>
+	<div class="footer-padding">This site is licensed under <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0</a>.</div>
+      </footer>
+
+      </div>
+  </body>
+</html>

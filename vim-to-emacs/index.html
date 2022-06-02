@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <!-- <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> -->
+    <title>malloc47/vim -&gt; emacs</title>
+    
+<meta name="keywords" content="">
+
+<meta property="og:url" content="https://www.malloc47.com/vim-to-emacs/" />
+<meta property="og:title" content="vim -&gt; emacs" />
+<meta property="og:type" content="article" />
+
+    <meta name="viewport" content="width=720">
+    <link rel="preload" href="/font/Existence-Light-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Regular-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Italic-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Bold-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Inconsolata-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/assets/style.css">
+    <link id="day-css" rel="stylesheet" href="/assets/night.css" disabled>
+    <link id="night-css" rel="stylesheet" href="/assets/day.css" disabled>
+    <script src="/assets/main.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <div class="icons-left">
+      <canvas id="miniclock" width="50" height="50" class="selectable"></canvas>
+      <span id="toggle" class="transparent-light toggle selectable"></span>
+    </div>
+        <div class="icons">
+      <a href="mailto:malloc47@gmail.com" class="transparent gmail"></a>
+      <a href="https://www.github.com/malloc47" class="transparent github"></a>
+    </div>
+
+    <div id="container">
+            <header id="main-header">
+	<p>malloc(<span class="header-number"><a href="/">47</a></span>)</p>
+	<p class="header-name">&mdash;<a href="https://www.twitter.com/malloc47">Jarrell Waggoner</a>&mdash;</p>
+      </header>
+
+            <nav>
+      	<ul>
+      	  <li><a href="/" title="Home">Home</a></li>
+      	  <li><a href="/about" title="About">About</a></li>
+      	  <li><a href="/music" title="Music">Music</a></li>
+      	  <li><a href="/research" title="Research">Research</a></li>
+      	  <li><a href="/talks" title="Talks">Talks</a></li>
+      	  <li><a href="mailto:malloc47@gmail.com" title="Email">Contact</a></li>
+      	</ul>
+      </nav>
+
+      <div id="contents" role="main">
+        
+<div class="content">
+  <div class="content-wrap">
+    <p class="date">2011 <span class="date-dark">00</span>05 <span class="date-dark">00</span>18 </p>
+        <p class="social">
+      <a href="https://www.facebook.com/sharer.php?u=https%3A%2F%2Fwww.malloc47.com%2Fvim-to-emacs%2F&amp;t=vim+-%3E+emacs"
+	 target="_blank"
+	 rel="nofollow"
+	 title="Share on Facebook">F</a>
+
+      <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.malloc47.com%2Fvim-to-emacs%2F&amp;text=vim+-%3E+emacs&amp;via=malloc47&amp;related=malloc47"
+	 target="_blank"
+	 title="Tweet"
+	 rel="nofollow">T</a>
+    </p>
+
+    <header>vim -&gt; emacs</header>
+    <div class="content-body">
+      <p>After having grown up in the terminal with vim at my side, I've been transitioning to back to emacs. There's no shortage of guides for making the leap, but there's a number of features in vim that operate very differently in emacs, or do not map cleanly to a single feature. There's nothing like not knowing how to get that <em>one</em> feature you rely on when making the vim-&gt;emacs leap to make you want to run back to familiar territory. Here's a few of the discoveries I've made along the way.</p>
+<pre><code>dd -&gt; C-Shift-Backspace
+</code></pre>
+<p><strong>C-k</strong> is more often cited as the analog for <strong>dd</strong> (and it is indeed more flexible in many situations), but as far as raw functionality is concerned, sometimes you just want the current line to go away, regardless of where the cursor is. Unfortunately, the** C-Shift-Backspace** keybinding may not be triggered when you're running emacs in a screen or xterm (emacs -nw), but for the majority of standard emacs use, it's a feature-compatible substitute.</p>
+<pre><code>% -&gt; C-M-n, C-M-p
+</code></pre>
+<p>Traversing pairs of grouping characters (e.g. (), [], {}, etc.) with vim's % key is invaluable, but emacs not only replicates this feature, but adds a few new bits of functionality too. In general <strong>C-n</strong> and <strong>C-p</strong> will traverse to the next or previous line, respectively, but <strong>C-M-n</strong> and <strong>C-M-p</strong> will traverse forward or backward over the current <em>list</em>. Since emacs has a major mode related to most languages you could find yourself working in (and if not, it's not difficult to find or make one) that will do a rudimentary parse of the code into proper tokens, <strong>C-M-n</strong> and <strong>C-M-p</strong> can intelligently jump to the beginning or end of parenthetical structures, words, or blocks with equal effectiveness. As a bonus, you also get <strong>C-M-d</strong> (if your window manager hasn't stolen that keybinding) and <strong>C-M-u</strong> that go down or up (respectively) in the current structure---i.e., <strong>C-M-d</strong> will place the cursor inside the parenthetical statement, ready to iterate over the items inside the parentheses with <strong>C-M-n</strong>, while <strong>C-M-u</strong> will place the cursor at the beginning of the parenthesis or block structure enclosing the cursor. Check the major mode you are in for even more context-sensitive commands (e.g., <strong>M-a</strong> and <strong>M-e</strong> to go the beginning or ending of a statement in the C++ major mode). Another instance where it <em>seems</em> like emacs adds overhead to the preciously minimalistic vim keybindings, but having two keys instead of one adds immeasurable navigational flexibility.</p>
+<pre><code>f, F, t, T -&gt; C-s, C-r
+</code></pre>
+<p>This may not be immediately intuitive, but the best mapping for vim's nifty &quot;forward (or backward) to character&quot; feature is emacs's standard search function. While, yes, the concession is that it requires three keystrokes (you must press enter after searching in emacs to position the cursor) instead of one, you get the same functionality, with the added benefit that you can search more than one character easily, and you don't have to retype the character you want to jump to, as you would in vim.</p>
+<pre><code>[n]gg, :[n] -&gt; M-g g
+</code></pre>
+<p>Though emacs integrates so well into most REPLs that you don't often need to jump to specific line numbers manually, it's still trivial to hop to specific line numbers with ease. Again, you're sacrificing more keystrokes but, as with everything in emacs, you can remap anything you use often. Alternately, consider using the faster <strong>C-[n] M-g g</strong> variant to prepend the line number instead of having to specify it (and hit enter) in the mini-buffer.</p>
+<pre><code>&quot;[register]p -&gt; C-y M-y
+</code></pre>
+<p>The kill ring in emacs isn't remotely complex, so it's hardly worth mentioning except that it varies greatly from vim's model of using registers to store yanked text. Instead of having to specify a register, as you do in vim, you simply paste whatever text happens to be in the ring into your document/code with <strong>C-y</strong>, then loop through the various yanks with <strong>M-y</strong>. Coming from a vim world, where every yank requires a register that contains only one snippet of text, the value of having yanks (or kills) you can scroll through (in the exact context you wish to paste them) is quite clear (and can actually result in fewer keystrokes for complicated yanks). As a bonus, only having to use <strong>C-w</strong> or <strong>M-w</strong> to yank text requires fewer keystrokes than having to use <strong>&quot;[reg]y</strong> in vim too.</p>
+<pre><code>q[register] ... q -&gt; C-x ( ... C-x ) M-x name-last-kbd-macro [name]
+</code></pre>
+<p>The only surface difference between vim and emacs for keyboard macros is that vim assigns keyboard macros to a register by default, but emacs requires <strong>M-x name-last-kbd-macro</strong> to cache more than one macro at a time. The difference becomes more stark once you explore multiple macros, as you can apply a named keyboard macro by using <strong>M-x [name]</strong>, since emacs saves the keyboard macro as a standard emacs command. As a bonus you can use the <strong>M-x insert-kbd-macro</strong> to save the macro to your <em>.emacs</em> file for future use.</p>
+<pre><code>u, C-r -&gt; C-/
+</code></pre>
+<p>This is another emacs feature that's very simple to understand, but where vim logic may trip you up. Most vim-&gt;emacs guides will clue you in that vim's <strong>u</strong> maps to emacs <strong>C-/</strong> (<strong>C-_</strong> or <strong>C-x u</strong>, but those are more of a hassle), which is indeed correct. But the underlying &quot;redo&quot; logic is a bit different. Instead of vim's separate <strong>C-r</strong> redo command, emacs lets you &quot;undo your undos&quot; (again, think yank ring). So after a series of consecutive **C-/**s, all you need do is interrupt the sequence with a command that does not produce any undo history (I typically use a movement command like <strong>C-f</strong>), and then use <strong>C-/</strong> again, which will then, essentially, have become a &quot;redo&quot; command. This will become second nature quickly, but it's a very different model from the inferior method used by vim (and a large number of other editors).</p>
+<pre><code>: -&gt; M-:, M-x
+</code></pre>
+<p>Only thing worth mentioning here is the difference between executing direct elisp code (<strong>M-:</strong>) and emacs commands (<strong>M-x</strong>), which is not a distinction that vim has to make.</p>
+<pre><code>:tabn, gf -&gt; C-x b
+</code></pre>
+<p>Vim actually does allow for &quot;hidden&quot; buffers, so it can operate in a very emacsish way, if desired, but it a rarely-used feature; one that emacs adopts by default. Emacs doesn't have &quot;tabs&quot; to switch between, per se, but the way it handles buffers is vastly more powerful than any tab or hidden buffer in vim, minus the &quot;tab&quot; aesthetic (and ido-mode or <strong>C-x C-b</strong> is more than capable of providing a list if that is what is needed).</p>
+<pre><code>Screen Line Movement -&gt; Logical Line Movement
+</code></pre>
+<p>Emacs's <strong>C-n</strong> and <strong>C-p</strong> move over screen lines (the line breaks you see on the screen) by default, while vim's <strong>j</strong>,<strong>k</strong> moves over logical lines (line breaks that are actually in the file). While vim's logical line movement can cause problems with long lines (you have to use <strong>gj</strong> and <strong>gk</strong> to switch over to screen lines), you can switch emacs to logical line movement, if you prefer it, with</p>
+<pre><code>(setp line-move-visual nil)
+</code></pre>
+<p>which can be easily entered with <strong>M-:</strong> in emacs to try it out, or added to your <code>.emacs</code> file to save the setting.</p>
+
+    </div>
+  </div>
+      <div class="share">
+      <a href="https://twitter.com/share" class="twitter-share-button" data-via="malloc47">Tweet</a>
+    </div>
+
+</div>
+
+      </div>
+            <footer>
+	<div class="icons">
+	  <a href="/rss.xml" class="transparent rss"></a>
+	</div>
+	<div class="footer-padding">This site is licensed under <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0</a>.</div>
+      </footer>
+
+      </div>
+  </body>
+</html>

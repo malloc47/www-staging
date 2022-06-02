@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <!-- <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> -->
+    <title>malloc47/Building a Personal Dashboard in ClojureScript Part 3</title>
+    
+<meta name="keywords" content="">
+
+<meta property="og:url" content="https://www.malloc47.com/building-a-personal-dashboard-in-clojurescript-part-3/" />
+<meta property="og:title" content="Building a Personal Dashboard in ClojureScript Part 3" />
+<meta property="og:type" content="article" />
+
+    <meta name="viewport" content="width=720">
+    <link rel="preload" href="/font/Existence-Light-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Regular-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Italic-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Bold-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Inconsolata-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/assets/style.css">
+    <link id="day-css" rel="stylesheet" href="/assets/night.css" disabled>
+    <link id="night-css" rel="stylesheet" href="/assets/day.css" disabled>
+    <script src="/assets/main.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <div class="icons-left">
+      <canvas id="miniclock" width="50" height="50" class="selectable"></canvas>
+      <span id="toggle" class="transparent-light toggle selectable"></span>
+    </div>
+        <div class="icons">
+      <a href="mailto:malloc47@gmail.com" class="transparent gmail"></a>
+      <a href="https://www.github.com/malloc47" class="transparent github"></a>
+    </div>
+
+    <div id="container">
+            <header id="main-header">
+	<p>malloc(<span class="header-number"><a href="/">47</a></span>)</p>
+	<p class="header-name">&mdash;<a href="https://www.twitter.com/malloc47">Jarrell Waggoner</a>&mdash;</p>
+      </header>
+
+            <nav>
+      	<ul>
+      	  <li><a href="/" title="Home">Home</a></li>
+      	  <li><a href="/about" title="About">About</a></li>
+      	  <li><a href="/music" title="Music">Music</a></li>
+      	  <li><a href="/research" title="Research">Research</a></li>
+      	  <li><a href="/talks" title="Talks">Talks</a></li>
+      	  <li><a href="mailto:malloc47@gmail.com" title="Email">Contact</a></li>
+      	</ul>
+      </nav>
+
+      <div id="contents" role="main">
+        
+<div class="content">
+  <div class="content-wrap">
+    <p class="date">2021 <span class="date-dark">00</span>09 <span class="date-dark">00</span>12 </p>
+        <p class="social">
+      <a href="https://www.facebook.com/sharer.php?u=https%3A%2F%2Fwww.malloc47.com%2Fbuilding-a-personal-dashboard-in-clojurescript-part-3%2F&amp;t=Building+a+Personal+Dashboard+in+ClojureScript+Part+3"
+	 target="_blank"
+	 rel="nofollow"
+	 title="Share on Facebook">F</a>
+
+      <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.malloc47.com%2Fbuilding-a-personal-dashboard-in-clojurescript-part-3%2F&amp;text=Building+a+Personal+Dashboard+in+ClojureScript+Part+3&amp;via=malloc47&amp;related=malloc47"
+	 target="_blank"
+	 title="Tweet"
+	 rel="nofollow">T</a>
+    </p>
+
+    <header>Building a Personal Dashboard in ClojureScript Part 3</header>
+    <div class="content-body">
+      <p>My raison d'être for creating the wall-mounted dashboard discussed in
+<a href="/building-a-personal-dashboard-in-clojurescript">previous</a> <a href="/building-a-personal-dashboard-in-clojurescript-part-2">posts</a> was to
+help with timing my transit connections when leaving my NYC
+apartment. After living on my block for a few months, I had worked out
+the perfect time to step out the door to make a subway, bus, or ferry
+connection, but quickly grew tired of having to pull out my phone to
+verify the transit time. I basically wanted an equivalent of the
+<a href="https://mta.info/">MTA</a> transit time boards found in most subway stations, customized
+with my local stations.</p>
+<p>Jumping straight to a sample of the end result, I wanted a dashboard
+like this:</p>
+<a href="/img/posts/cockpit/transit.png">
+  <img src="/img/posts/cockpit/transit.png" alt="Sample transit card" width="400" />
+</a>
+<p>Building this view, however, is less simple than it sounds. A big part
+of the complexity is in finding and consuming a source for the transit
+departure times. Unlike the <a href="/building-a-personal-dashboard-in-clojurescript-part-2">weather card</a>,
+there isn't a single, free, purpose-built API to serve such
+dashboards. To deal with transit, we have to solve two main
+challenges:</p>
+<ol>
+<li>
+<p>Finding a source for the transit data we need to display on the
+dashboard.</p>
+</li>
+<li>
+<p>Consuming transit data from the above source, stitching it together
+to populate the view.</p>
+</li>
+</ol>
+<p>For narrative reasons, we'll take these points in reverse order before
+delving into the implementation.</p>
+<h1 id="consuming-transit-data">Consuming Transit Data</h1>
+<p>The most common way to address (2) is by consuming a source that
+adheres to the <a href="https://developers.google.com/transit">GTFS</a> (General Transit Feed Specification), the
+defacto standard for transit data that is published by many transit
+agencies. It has complementary <a href="https://developers.google.com/transit/gtfs">static</a> and
+<a href="https://developers.google.com/transit/gtfs-realtime">realtime</a> flavors, and we need both sources to get the
+most accurate data for our dashboard.</p>
+<p>To better understand the complexity of GTFS, this is a (very rough)
+entity relationship diagram:</p>
+<a href="/img/posts/cockpit/gtfs-erd.svg">
+  <img src="/img/posts/cockpit/gtfs-erd.svg" alt="GTFS ERD" width="600" />
+</a>
+<p>Note that there are <a href="https://web.archive.org/web/20130117174415/http://www.dft.gov.uk/transmodel/schema/doc/GoogleTransit/TransmodelForGoogle-09.pdf">other similar ERDs</a> that are
+likely better-researched but didn't fit quite as nealy into this post
+so I took a stab at creating this diagram myself. There are a few
+caveats in the image above: There are a lot of conditional
+relationships in GTFS that are not captured in this image; similarly,
+there are also a number of nested entities in the realtime spec that
+are glossed over in this diagram for simplicity.</p>
+<p>GTFS is quite normalized so there isn't an obvious self-contained
+single entity we can read that will let us drive everything in our
+dashboard.  Combing through the GTFS entities, there is a sizable
+number that are not relevant to displaying transit times at a chosen
+station. Removing entities related to fare calculation, pathing,
+language translation, station layout, and so forth, the resulting
+trimmed-down ERD looks like:</p>
+<a href="/img/posts/cockpit/gtfs-erd-small.svg">
+  <img src="/img/posts/cockpit/gtfs-erd-small.svg" alt="GTFS ERD Small" width="300" />
+</a>
+<p>This subset of the GTFS is a bit more manageable for demonstrating
+what we need to consume for our dashboard. The particular relevant
+subset might be different for other agencies (e.g., some agencies
+might rely more on <code>frequency</code>-based service or have <code>calendar</code>-based
+service changes) but this is all I needed based on the <a href="https://mta.info/">MTA</a> GTFS.</p>
+<p>Exploring this subset in more detail, the <code>agency</code> entity isn't
+strictly necessary except in cases where the feed represents multiple
+agencies. To populate the dashboard, we will identify one or more
+<code>stops</code>, use these stops to filter the <code>stop times</code> list which allows
+us to compute the arrival times at a given stop. This would be
+sufficient for our dashboard if there's a single transit line going in
+a single direction at a given stop. However, if there's multiple
+routes or directions of travel at a particular stop then we need to
+split the <code>stop times</code> into groups by direction and route to
+differentiate them. To accomplish this, we additionally look up the
+<code>trip</code> for each <code>stop time</code> which gives us information about the trip
+direction, and then walk through <code>trips</code> to <code>routes</code> which allows us
+bucket the <code>stop times</code> into groups by route.</p>
+<p>So far, we've only touched the entities in the static GTFS, which is
+sufficient if the agency consistency runs on time (🤣). To bring the
+prescheduled <code>stop times</code> into alignment with reality, we read the
+<code>trip updates</code> Realtime source and (hand-waving a lot here) update the
+<code>stop times</code> with these realtime updates at a reasonable interval.</p>
+<p>At a high-level, this is our roadmap for reading the subset of the
+GTFS that we need for this dashboard.</p>
+<h1 id="serving-transit-data">Serving Transit Data</h1>
+<p>Stepping backwards to address point (1) above, we need to talk about
+how we physically convey GTFS data into our web application. The
+static portion of the GTFS is a zip file containing <code>.txt</code> files
+(effectively CSV formatted)--not impossible to download directly from
+the transit agency into a web application with the right
+<a href="https://gildas-lormeau.github.io/zip.js/">decompression</a> and <a href="https://www.papaparse.com/">parsing</a> libraries, but hardly
+idiomatic. The GTFS Realtime format is even more challenging as it is
+serialized as a <a href="https://developers.google.com/protocol-buffers">Protocol Buffer</a>. It <em>might</em> be theoretically
+possible to consume the realtime ProtoBuf stream by providing the
+<code>.proto</code> file to the browser and using a <a href="https://github.com/mapbox/pbf">ProtoBuf javascript
+decoder</a>; in practice, the real-time updates from the <a href="https://api.mta.info/">MTA</a> are megabytes-to-gigabytes and are updated frequently enough
+that I had concerns as to whether a cheap, wall-mounted tablet would
+be able to handle parsing the feeds in-browser at a reasonable
+frequency.</p>
+<p>Thankfully, there are multiple server-side options available which
+vary in quality, completeness, and implementation language. Choosing a
+minimal GTFS server could absolutely work for this use case, but I
+ultimately ended up gravitating towards the <a href="https://www.opentripplanner.org/">Open Trip Planner</a>
+(OTP) project which specializes in route planning (including surface
+street connections using <a href="https://www.openstreetmap.org/">OpenStreetMap</a>). Not only does OTP consume
+GTFS (both static and realtime) for use in its route planning, it
+caches the serialized results for faster reloading, has a fetching
+mechanism to pull the feeds in at a regular cadence, and--most
+importantly for our intended application--has an <a href="http://dev.opentripplanner.org/apidoc/1.0.0/resource_IndexAPI.html">Index API</a> which
+provides a REST interface to query GTFS entities. Even better, it is
+becoming increasingly common for transit agencies themselves to host
+an OTP instance for their route planning or transit time needs--if
+such an instance is public-facing, using it saves a lot of work
+configuring and hosting our own OTP instance.</p>
+<p>The discussion from the previous section roughly translates to the
+following Clojure pseudocode to walk through the GTFS entities and
+collect a useful payload:</p>
+<pre><code class="clojure">(defn stop-times
+  [stop-id]
+  (-&gt;&gt; stop-id
+       fetch-stop
+       fetch-stop-times
+       (map (fn [stop-time]
+              (let [trip  (fetch-trip (:trip-id stop-time))
+                    route (fetch-route (:route-id trip))]
+                (assoc stop-time
+                       :route route
+                       :direction (:direction trip)))))))
+</code></pre>
+<p>Following this, we can <code>concat</code> all the <code>stop-times</code> from all the
+<code>stop-id</code>s together and do a <code>(group-by #(select-keys % [:direction :route]))</code> to bundle them into the rows displayed in the dashboard.</p>
+<p>From the <a href="http://dev.opentripplanner.org/apidoc/1.0.0/resource_IndexAPI.html">Index API</a>, the following endpoints look promising to meet
+these needs:</p>
+<table>
+<thead></thead>
+<tbody>
+<tr><td>stop</td><td><code>/index/stops/{stop-id}</code></td></tr>
+<tr><td>stop times</td><td><code>/index/stops/{stop-id}/stoptimes</code></td></tr>
+<tr><td>trip</td><td><code>/index/trips/{trip-id}</code></td></tr>
+<tr><td>route</td><td><code>/index/routes/{route-id}</code></td></tr>
+</tbody>
+</table>
+<p>As it turns out, the Index API is able to flatten the <code>trip</code> into the
+<code>stop</code> entity (<code>/index/stops/{stop-id}</code>) for us in the scenario where
+the stop services a single line + direction. This does not initially
+sound like a very useful optimization for more complex transit systems
+that routinely have multiple routes traveling multiple directions that
+stop at the same station. However, in the case of the MTA's GTFS, the
+agency choose to model stations hierarchically, where the main station
+is the parent stop and different lines+directions are child stops
+within the same overall station. The Index API also directly adds the
+<code>route-id</code> to the individual <code>stop times</code> (i.e., it traverses the
+<code>stop-time -&gt; trip</code> entities for us). Thus by choosing these &quot;child&quot;
+stops that represent a single line + direction, we can save having to
+make the additional <code>trip</code> call to get the direction + route ID. Under
+this optimization assumption we get an even trimmer effective ERD:</p>
+<p><a href="/img/posts/cockpit/gtfs-erd-smaller.svg"> <img
+  src="/img/posts/cockpit/gtfs-erd-smaller.svg" alt="GTFS ERD Smaller"
+  width="300" /> </a></p>
+<p>Depending on your particular agency, this optimization may not be
+applicable or might be overkill if you're hosting your own OTP and
+don't have any concerns about the number of API queries. If
+self-hosting, this might be a good candidate for the <a href="https://samnewman.io/patterns/architectural/bff/">BFF</a> pattern,
+but the rest of this post assumes a preexisting OTP instance without
+any extra server-side components on top of it.</p>
+<h1 id="implementation">Implementation</h1>
+<p>Now that we've settled on the physical API to use and know the
+relationships among the entities we need for our dashboard, all we
+have left is to code and style it. Rather than go line-by-line as in
+previous installments, I'll only be going over the highlights of the
+<a href="https://github.com/malloc47/cockpit/blob/d4badb7e652014693574063806a8ccda27d9fa36/src/cljs/cockpit/transit.cljs">source code</a> in this section.</p>
+<p>As with other external APIs we need to hit, we use
+<a href="https://github.com/day8/re-frame-http-fx">re-frame-http-fx</a> for defining the &quot;effect handlers&quot; that made the
+side-effecting REST calls. An example where we fetch the <code>stop-times</code>
+(assumes that the <code>stop</code> has already been fetched and is passed as
+input):</p>
+<pre><code class="clojure">(re-frame/reg-event-fx
+ ::fetch-stop-times
+ (fn [_ [_ {:keys [stop-id] :as stop}]]
+   {:http-xhrio
+    (merge
+     otp-request
+     {:uri        (str config/otp-uri
+                       &quot;/routers/default/index/stops/&quot;
+                       stop-id
+                       &quot;/stoptimes&quot;)
+      :on-success [::persist-stop-times [:transit :stop-times stop]]
+      :on-failure [::events/http-fail [:transit :stop-times stop]]})}))
+</code></pre>
+<p>The notable part of this effect handler is the <code>::persist-stop-times</code>
+event which is dispatched when the effect handler is successful. The
+<code>::persist-stop-times</code> event is, itself an effect handler that
+persists the <code>stop-times</code> API payload into the <code>re-frame.db/app-db</code>
+while also fanning out (<code>:dispatch-n</code>) to trigger <code>::fetch-route</code>
+events for all the new <code>route-ids</code> that it finds:</p>
+<pre><code class="clojure">(re-frame/reg-event-fx
+ ::persist-stop-times
+ (fn [{:keys [db]} [_ key-path stop-times]]
+   (let [existing-route-ids (-&gt; db :transit :routes keys set)
+         new-route-ids      (-&gt;&gt; stop-times :route :id set)
+         ;; diff what is in the DB with the newly-seen routes so we
+         ;; only fetch them once
+         route-ids          (-&gt;&gt; (difference new-route-ids
+                                             existing-route-ids)
+                                 (remove nil?))
+         stop-id            (-&gt; key-path last :stop-id)]
+     {:db         (assoc-in db key-path stop-times)
+      ;; fire requests for the routes listed in the payload
+      :dispatch-n (map (fn [route-id]
+                         [::fetch-route route-id])
+                       route-ids)})))
+</code></pre>
+<p>The route-fetching events are fired after fetching the stop times
+because the routes that serve a particular stop might change at any
+given point so we don't necessarily know all the routes ahead of time.
+And it would be better not to have to preemptively fetch every route
+in the system, particularly for larger agencies like the MTA. We also
+want to avoid re-fetching the same routes over and over again, so
+<code>route-ids</code> that are already present in the <code>app-db</code> are not fetched
+again to minimize API queries, effectively treating the <code>app-db</code> as a
+cache.</p>
+<p>How the <code>stop</code> and <code>route</code> entities are persisted is less interesting
+so I'm omitting examples of them here. Just like the <a href="/building-a-personal-dashboard-in-clojurescript-part-2">weather
+API</a> prior, we now need only to <a href="https://github.com/malloc47/cockpit/blob/d4badb7e652014693574063806a8ccda27d9fa36/src/cljs/cockpit/polling.cljs#L27-L37">poll the
+transit
+API</a>
+at regular intervals to make sure our <code>app-db</code> always has fresh
+information ready for display.</p>
+<p>Like other re-frame applications, now that we have our events defined
+we need to create subscriptions on the resulting <code>app-db</code> changes to
+turn these raw OTP Index API payloads into a processed form ready to
+be used by our view. Our &quot;Level 1&quot; subscriptions are fairly simple:</p>
+<pre><code class="clojure">(re-frame/reg-sub
+ ::stop-times-raw
+ (fn [db _]
+   (-&gt; db :transit :stop-times)))
+;;; Repeat for stops and routes...
+</code></pre>
+<p>which fetches the raw API payload for the <code>stop-times</code>, which looks
+something like this:</p>
+<pre><code class="clojure">[{:route {:id &quot;MTASBWY:1&quot;}
+  :times
+  [{:departureDelay     0
+    :stopName           &quot;South Ferry&quot;
+    :scheduledDeparture 89130
+    :stopId             &quot;MTASBWY:142N&quot;
+    :directionId        &quot;0&quot;
+    :serviceDay         1592539200
+    :tripId             &quot;MTASBWY:5953&quot;
+    :realtimeDeparture  89130
+    :stopHeadsign       &quot;Uptown &amp; The Bronx&quot;
+    :tripHeadsign       &quot;Van Cortlandt Park - 242 St&quot;}]
+    ...}
+ ...]
+</code></pre>
+<p>Note the <code>realtimeDeparture</code> field which is updated by OTP with the
+GTFS Realtime source.  This payload goes through a cleanup
+subscription that grabs specific keys from the payload, places them
+into a flattened data structure, and converts the fixed departure
+timestamp into a &quot;minutes from now&quot; format that we'll want in our
+view:</p>
+<pre><code class="clojure">(re-frame/reg-sub
+ ::stop-times
+ :&lt;- [::stop-times-raw]
+ :&lt;- [::clock/clock]
+ (fn [[stop-times clock] _]
+   (let [now (time-coerce/from-date clock)]
+     (-&gt;&gt; stop-times
+          vals
+          (apply concat)
+          (mapcat
+           (fn [{:keys [times route]}]
+             (-&gt;&gt; times
+                  (map #(assoc % :route route))
+                  (map
+                   (fn [{time           :realtimeDeparture
+                         day            :serviceDay
+                         stop-id        :stopId
+                         {route-id :id} :route
+                         direction-id   :directionId}]
+                     {:minutes        (-&gt; time (+ day) (* 1e3)
+                                          time-coerce/from-long
+                                          (-&gt;&gt; (safe-interval now))
+                                          time/in-seconds
+                                          (/ 60)
+                                          js/Math.ceil)
+                      :stop-id        stop-id
+                      :route-id       route-id
+                      :direction-id   direction-id})))))))))
+</code></pre>
+<p>This subscription code is detailed and has some assorted helpers
+(<code>safe-interval</code>, the <code>cljs-time</code> namespaces) that are significant but
+not worth a tangent right now. As before, I'm also omitting similar
+cleanup subscriptions for the <code>stop</code> and <code>route</code> payloads.</p>
+<p>Finally, we join all three of <code>stops</code>, <code>stop-times</code>, and <code>routes</code>
+together with a 3rd-level subscription:</p>
+<pre><code class="clojure">(re-frame/reg-sub
+ ::stop-times-processed
+ :&lt;- [::stop-times]
+ :&lt;- [::routes]
+ :&lt;- [::stops]
+ (fn [[stop-times routes stops] _]
+   (-&gt;&gt; stop-times
+        (filter (-&gt; (every-pred nat-int? (partial &gt; 60))
+                    (comp :minutes)))
+        (map (fn [{:keys [stop-id route-id] :as stop-time}]
+               (-&gt; stop-time
+                   (assoc :stop (get stops stop-id))
+                   (assoc :route (get routes route-id)))))
+        ;; Make this an inner join
+        (filter (every-pred :stop :route))
+        ;; Group by stop only
+        (group-by #(select-keys % [:stop]))
+        ;; Add route to key after grouping to keep routes together
+        (map (fn [[k v]]
+               [(assoc k :route (roll-up-route v))
+                v]))
+        (into {})
+        (map-vals #(-&gt;&gt; %
+                        (filter
+                         (fn [{:keys [direction-id]
+                               {stop-direction-id :direction-id} :stop}]
+                           (or
+                            (= direction-id stop-direction-id)
+                            (nil? stop-direction-id))))
+                        (sort-by :minutes)
+                        (take 4)))
+        (sort-by (juxt (comp :sort-override :stop first)
+                       (comp :sort-order :route first)
+                       (comp :stop-id :stop first))))))
+</code></pre>
+<p>This is a <em>lot</em> to unpack, especially compared with the pseudocode
+above (which probably means this code needs some refactoring into more
+subscriptions); out of laziness, I'll just summarize the highlights:</p>
+<ul>
+<li>Keep only <code>stop-times</code> that are less than 60 minutes out</li>
+<li>The <code>stop</code> and <code>route</code> are attached to the <code>stop-time</code> with an inner
+join</li>
+<li>Group all <code>stop-times</code> by the different <code>stops</code> they represent</li>
+<li>Do a &quot;roll up&quot; of all the routes attached to the stop times inside
+of each group with the <a href="https://github.com/malloc47/cockpit/blob/d4badb7e652014693574063806a8ccda27d9fa36/src/cljs/cockpit/transit.cljs#L233-L256"><code>roll-up-route</code>
+function</a>,
+which lets us show a stop, say
+<a href="https://en.wikipedia.org/wiki/Lexington_Avenue%E2%80%9363rd_Street_station">Lex/63rd</a>,
+as a single row labeled &quot;F/Q&quot; rather than having separate rows for
+the F and Q lines. This is typically more useful for express lines
+or other situations where you care only about the latest departure
+but don't care about the particular line.</li>
+<li>Filter out mislabeled stop times going the wrong direction at a stop</li>
+<li>Sort the stop times in each group in ascending order</li>
+<li>Take the first four stop-times in each group to show in the view</li>
+<li>Sort the groups themselves</li>
+</ul>
+<p>We now have a stable, easy-to-consume set of groups corresponding to
+all the stops we care about, each with up to four upcoming departure
+times in minutes.</p>
+<p>This payload is subsequently rendered in the view. Recall that we want
+a series of rows in our view that look like:</p>
+<p><a href="/img/posts/cockpit/transit-row.png"> <img
+  src="/img/posts/cockpit/transit-row.png" alt="Transit row"
+  width="300" /> </a></p>
+<p>where the arrow specifies the direction of travel, the round symbol
+specifies the particular route name, and the stop times fan out to the
+right. This is rendered with:</p>
+<pre><code class="clojure">(defn transit []
+  [:&gt; Card {:height &quot;48vh&quot;}
+   [:&gt; CardContent
+    [:&gt; Grid {:container true :spacing 1 :alignItems &quot;center&quot;}
+     (map
+      (fn [[{{:keys [color text-color short-name route-id]} :route
+             {:keys [direction-id stop-id]} :stop}
+            stop-times]]
+        ;; Since this element is being dynamically generated, must
+        ;; specify key so React can do its reconcilliation
+        [:&lt;&gt; {:key (str stop-id &quot;-&quot; route-id)}
+
+         ;; Arrow pointing up or down corresponding to the direction
+         [:&gt; Grid {:item true :xs 1}
+          [:&gt; Typography {:variant &quot;h4&quot; :color &quot;textSecondary&quot;}
+           (get direction-id-&gt;arrow direction-id &quot;&quot;)]]
+
+         ;; Line symbol that takes its color directly from the
+         ;; transit agency's route metadata
+         [:&gt; Grid {:item true :xs 2}
+          [:&gt; Avatar {:style {:background-color (str &quot;#&quot; color)
+                              :color (str &quot;#&quot; text-color)}}
+           short-name]]
+
+         ;; Render the stop
+         (-&gt;&gt; (concat stop-times (repeat nil))
+              (map-indexed
+               (fn [idx {:keys [minutes] :as stop-time}]
+                 [:&lt;&gt; {:key idx}
+                  [:&gt; Grid {:item true :xs 2}
+                   (when stop-time
+                     [:&gt; Typography
+                      [:span
+                       (if (&gt; minutes 0)
+                         [:&lt;&gt; minutes [:span &quot;m &quot;]]
+                         &quot;Now &quot;)]])]]))
+              (take 4))
+
+         [:&gt; Grid {:item true :xs 1}]])
+      @(re-frame/subscribe [::transit/stop-times-processed]))]]])
+</code></pre>
+<p>This is another beast of a function (and I omitted some styling just
+to trim it down this small), but broken down is not too complicated:
+The outer <code>map</code> generates a row where each row consists of the up/down
+arrow and a circular <code>Avatar</code> symbol with the line <code>short-name</code> to
+display the route. The inner <code>map-indexed</code> generates exactly 4 stop
+times (or empty <code>Grid</code> items to pad out the grid).</p>
+<h1 id="conclusion">Conclusion</h1>
+<p>Since this the final post in the series, I would be remiss not to
+include some photos of the finished product:</p>
+<table>
+<thead></thead>
+<tbody>
+<tr><td><a href="/img/posts/cockpit/wall1.jpg"> <img src="/img/posts/cockpit/wall1.jpg" alt="Wall-mounted dashboard" height="250" /> </a></td><td><a href="/img/posts/cockpit/wall2.jpg"> <img src="/img/posts/cockpit/wall2.jpg" alt="Wall-mounted dashboard with door" height="250" /> </a></td></tr>
+</tbody>
+</table>
+<p>Differing slightly from the <a href="/building-a-personal-dashboard-in-clojurescript">first installment</a>, I've since replaced
+the stock chart in the lower right with a webcam view from <a href="https://nyc.gov/dot">NYC DOT</a>
+but kept the appearance otherwise unchanged.</p>
+<p>The dashboard is displayed on an inexpensive, previous-generation
+<a href="https://www.amazon.com/Fire-HD-8-Previous-Generation-9th/dp/B0794RHPZD">Amazon Fire 8</a> using the <a href="https://github.com/thanksmister/wallpanel-android">WallPanel</a> app (having switched away
+from <a href="https://www.fully-kiosk.com/">Fully Kiosk</a> for this open-source option) to keep the
+ClojureScript SPA running continually. To physically affix the tablet
+to the wall, I purchased a <a href="https://www.amazon.com/gp/product/B01BX5YWF4/">tablet wall mount</a> which adheres using
+Command Strips. A wall-colored Micro USB cable to keep the tablet
+charged completes the installation.</p>
+<p>So far, this setup has been working well. There are some minor
+annoyances with the hardware: This particular Fire tablet does not
+make ambient light adjustments to the screen brightness so it lightens
+my living room considerably at night. Given that this tablet is a full
+order of magnitude cheaper than the premium tablet options, it has
+been more than sufficient for this purpose and I won't be overly upset
+by battery or screen burn-in issues long-term.</p>
+<table>
+<thead></thead>
+<tbody>
+<tr><td><a href="/building-a-personal-dashboard-in-clojurescript">Part 1</a></td><td><a href="/building-a-personal-dashboard-in-clojurescript-part-2">Part 2</a></td><td>Part 3</td></tr>
+</tbody>
+</table>
+
+    </div>
+  </div>
+      <div class="share">
+      <a href="https://twitter.com/share" class="twitter-share-button" data-via="malloc47">Tweet</a>
+    </div>
+
+</div>
+
+      </div>
+            <footer>
+	<div class="icons">
+	  <a href="/rss.xml" class="transparent rss"></a>
+	</div>
+	<div class="footer-padding">This site is licensed under <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0</a>.</div>
+      </footer>
+
+      </div>
+  </body>
+</html>

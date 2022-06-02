@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <!-- <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> -->
+    <title>malloc47/Beating Interview Problems to Death with Parallel Haskell</title>
+    
+<meta name="keywords" content="">
+
+<meta property="og:url" content="https://www.malloc47.com/beating-interview-problems-to-death-with-parallel-haskell/" />
+<meta property="og:title" content="Beating Interview Problems to Death with Parallel Haskell" />
+<meta property="og:type" content="article" />
+
+    <meta name="viewport" content="width=720">
+    <link rel="preload" href="/font/Existence-Light-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Regular-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Italic-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Bold-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Inconsolata-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/assets/style.css">
+    <link id="day-css" rel="stylesheet" href="/assets/night.css" disabled>
+    <link id="night-css" rel="stylesheet" href="/assets/day.css" disabled>
+    <script src="/assets/main.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <div class="icons-left">
+      <canvas id="miniclock" width="50" height="50" class="selectable"></canvas>
+      <span id="toggle" class="transparent-light toggle selectable"></span>
+    </div>
+        <div class="icons">
+      <a href="mailto:malloc47@gmail.com" class="transparent gmail"></a>
+      <a href="https://www.github.com/malloc47" class="transparent github"></a>
+    </div>
+
+    <div id="container">
+            <header id="main-header">
+	<p>malloc(<span class="header-number"><a href="/">47</a></span>)</p>
+	<p class="header-name">&mdash;<a href="https://www.twitter.com/malloc47">Jarrell Waggoner</a>&mdash;</p>
+      </header>
+
+            <nav>
+      	<ul>
+      	  <li><a href="/" title="Home">Home</a></li>
+      	  <li><a href="/about" title="About">About</a></li>
+      	  <li><a href="/music" title="Music">Music</a></li>
+      	  <li><a href="/research" title="Research">Research</a></li>
+      	  <li><a href="/talks" title="Talks">Talks</a></li>
+      	  <li><a href="mailto:malloc47@gmail.com" title="Email">Contact</a></li>
+      	</ul>
+      </nav>
+
+      <div id="contents" role="main">
+        
+<div class="content">
+  <div class="content-wrap">
+    <p class="date">2012 <span class="date-dark">00</span>07 <span class="date-dark">00</span>08 </p>
+        <p class="social">
+      <a href="https://www.facebook.com/sharer.php?u=https%3A%2F%2Fwww.malloc47.com%2Fbeating-interview-problems-to-death-with-parallel-haskell%2F&amp;t=Beating+Interview+Problems+to+Death+with+Parallel+Haskell"
+	 target="_blank"
+	 rel="nofollow"
+	 title="Share on Facebook">F</a>
+
+      <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.malloc47.com%2Fbeating-interview-problems-to-death-with-parallel-haskell%2F&amp;text=Beating+Interview+Problems+to+Death+with+Parallel+Haskell&amp;via=malloc47&amp;related=malloc47"
+	 target="_blank"
+	 title="Tweet"
+	 rel="nofollow">T</a>
+    </p>
+
+    <header>Beating Interview Problems to Death with Parallel Haskell</header>
+    <div class="content-body">
+      <p>Like anyone for whom graduation is becoming more immanent, I've been
+taking a look at the latest trends in the typical technology interview
+process.  While many of the <a href="https://imranontech.com/2007/01/24/using-fizzbuzz-to-find-developers-who-grok-coding/">Fizz Buzz</a>es being thrown around
+aren't exactly exciting highlights of problem solving... well, you can
+always just beat them to death.</p>
+<p>The <a href="https://en.wikipedia.org/wiki/Run-length_encoding">Run Length Encoding</a> algorithm is a nice, compact, and
+slightly real-world interview problem that has been making the rounds
+for <a href="https://stackoverflow.com/questions/2048854/c-interview-question-run-length-coding-of-strings">years</a> now.  The basic idea being that &quot;runs&quot; of data,
+e.g. <code>aaaabbbbbbb</code>, are compressed into tuples, e.g. <code>4a7b</code>, which may
+be a smaller representation if there is a large amount of adjacent
+repeated information.  While real-world use cases for such a naïve
+compression scheme aren't abundant, the algorithm is straightforward
+and can be implemented in a dozen lines or so in most <a href="https://rosettacode.org/wiki/Run-length_encoding">languages</a>.
+If you've got regexes or similar libraries at your disposal, you can
+manage even fewer lines.  In <code>Haskell</code>'s case, one:</p>
+<pre><code class="haskell">rleMap l = map (\e -&gt; (head e, length e)) (group l)
+</code></pre>
+<p>which converts a string (or any arbitrary list of items) into a list
+of tuples, each of which has the character and its count.  The
+function has type</p>
+<pre><code class="haskell">rleMap :: (Eq a) =&gt; [a] -&gt; [(a, Int)]
+</code></pre>
+<p>Simple and easy.  But where's the fun in calling it quits now?
+Let's <a href="https://en.wikipedia.org/wiki/MapReduce">MapReduce</a> our <code>RLE</code> algorithm to make it easier to parallelize
+and potentially <a href="https://hadoop.apache.org/mapreduce/">Hadoop</a>-friendly.  We've already got our <code>map</code>
+function, so lets create a <code>reduce</code>:</p>
+<pre><code class="haskell">rleReduce :: [(Char,Int)] -&gt; [(Char,Int)] -&gt; [(Char,Int)]
+rleReduce [] [] = []
+rleReduce a  [] = a
+rleReduce [] b  = b
+rleReduce a b
+          | (fst $ last a ) == (fst $ head b) =
+                 init a ++  [(fst(last(a)),snd(last(a)) + snd(head(b)))] ++ tail b
+          | otherwise = a ++ b
+</code></pre>
+<p>This is a less common component of RLE implementations (I haven't
+spotted this particular bit of code anywhere else, so there's likely
+room for improvement), but no less straightforward: simply join two
+<code>RLE</code>'d lists together if their tail and head are not the same
+character; if they are, merge the head and tail tuple (updating the
+count) and combine the rest of the list as normal.</p>
+<p>Now, it's simply a matter of splitting the RLE target into pieces,
+<code>map</code>ing over pieces, and <code>reducing</code> them back into a cohesive
+<code>RLE</code>-encoded document:</p>
+<pre><code class="haskell">splitRLE n s = foldl rleReduce [] $ map rleMap $ chunkn n s
+</code></pre>
+<p>(<code>chunkn</code> is a simple hand-rolled routine that splits a string into
+<code>n</code> similar-sized pieces) As expected, splitting the list apart and
+recombining is needless overhead without parallelization:</p>
+<pre><code># No splitting (rleMap s)
+&gt; ghc -O2 prle --make
+&gt; /usr/bin/time -f '%E' ./prle large.txt 1&gt;/dev/null
+0:02.68
+
+# Nonparallel splitting (foldl rleReduce [] $ map rleMap $ chunkn n s)
+&gt; ghc -O2 prle --make
+&gt; /usr/bin/time -f '%E' ./prle large.txt 1&gt;/dev/null
+0:06.51
+</code></pre>
+<p>If we parallelize it using a simple <code>parMap</code>,</p>
+<pre><code class="haskell">parallelRLE n s = foldl rleReduce [] $ (parMap rdeepseq) rleMap $ chunkn n s
+</code></pre>
+<p>we might expect some improvement:</p>
+<pre><code># parallelRLE n s = foldl rleReduce [] $ (parMap rdeepseq) rleMap $ chunkn n s
+&gt; ghc -O2 prle --make -threaded -rtsopts
+
+# Parallel map 1 core
+&gt; /usr/bin/time -f '%E' ./prle large.txt +RTS -N1 1&gt;/dev/null
+0:06.31
+
+# Parallel map 2 cores
+&gt; /usr/bin/time -f '%E' ./prle large.txt +RTS -N2 1&gt;/dev/null
+0:08.50
+
+# Parallel map 4 cores
+/usr/bin/time -f '%E' ./prle large.txt +RTS -N4 1&gt;/dev/null
+0:11.00
+</code></pre>
+<p>Unfortunately, the bookkeeping and garbage collection overwhelm the
+problem very quickly, never achieving better performance.</p>
+<p>I'm running the above on a randomly-generated <code>12MB</code> text file, and no
+amount of coaxing could make the parallelized version do any better.
+While we could have written our <code>RLE</code> algorithm in plain <code>C</code> without
+much more trouble and not have encountered such performance obstacles,
+one does not <a href="https://memegenerator.net/instance/20426610">simply parallelize C</a> by swapping in a <code>parMap</code>
+either (see also: <a href="https://en.wikipedia.org/wiki/There_ain%27t_no_such_thing_as_a_free_lunch">this</a>).  Thus, we deep-dive into some <code>Haskell</code>
+optimization to get a performant version.</p>
+<p>There is one particularly painful bottleneck: <code>Haskell</code> list monads
+are not ideal for handling bulk data of the sort we need because
+<code>Haskell</code>'s <code>String</code> type is represented as a <code>[Char]</code>.  Since there's
+no reason to use a boxed linked list just to scan over characters, we
+instead turn to <code>Data.ByteString</code> for reading the input, and to
+<code>Data.Sequence</code> to handle the RLE-encoded tuples.  <code>Data.Sequence</code>
+specifically removes the large penalty when concatenating the lists
+together in the <code>reduce</code> step, as adding to either end of a <code>Seq</code> is a
+constant time operation. This is in contrast to <code>[]</code>, where only
+adding an element to a list head is constant time.  Importing these</p>
+<pre><code class="haskell">import Data.ByteString.Lazy.Char8 as BL
+       (ByteString
+       ,length
+       , take
+       , null
+       , splitAt
+       , group
+       , head
+       , pack
+       , readFile)
+import Data.Sequence as S
+</code></pre>
+<p>lets us rewrite our <code>map</code></p>
+<pre><code class="haskell">rleMap :: BL.ByteString -&gt; Seq (Char,Int)
+rleMap l = fromList $ P.zip (map BL.head c) (map (fromIntegral . BL.length) c)
+       where
+        c = BL.group $ l
+</code></pre>
+<p>and <code>reduce</code></p>
+<pre><code class="haskell">rleReduce :: Seq (Char,Int) -&gt; Seq (Char,Int) -&gt; Seq (Char,Int)
+rleReduce a b = rleReduce' (viewr a) (viewl b)
+             where
+              rleReduce' EmptyR EmptyL = S.empty
+              rleReduce' EmptyR _ = b
+              rleReduce' _ EmptyL = a
+              rleReduce' (rs :&gt; r) (l :&lt; ls)
+                         | (fst r) == (fst l) =
+                           (rs |&gt; (fst(r),snd(r) + snd(l))) &gt;&lt; ls
+                         | otherwise = a &gt;&lt; b
+</code></pre>
+<p>Optionally, <code>Data.Sequence</code> can be expressed with <code>ViewPatterns</code>.
+Rewriting with these in mind allows the new <code>reduce</code> to resemble the
+old one fairly closely:</p>
+<pre><code class="haskell">{-# LANGUAGE ViewPatterns #-}
+rleReduce (viewr -&gt; EmptyR) (viewl -&gt; EmptyL) = S.empty
+rleReduce (viewr -&gt; EmptyR) b = b
+rleReduce a (viewl -&gt; EmptyL) = a
+rleReduce a@(viewr -&gt; (rs :&gt; r)) b@(viewl -&gt; (l :&lt; ls))
+           | (fst r) == (fst l) =
+             (rs |&gt; (fst(r),snd(r) + snd(l))) &gt;&lt; ls
+           | otherwise = a &gt;&lt; b
+</code></pre>
+<p>Now we finally define a new <code>parallelRLE</code></p>
+<pre><code class="haskell">parallelRLE :: Int -&gt; BL.ByteString -&gt; Seq (Char, Int)
+parallelRLE n s = foldl rleReduce empty $ (parMap rseq) rleMap $ chunkn n s
+</code></pre>
+<p>and wrap it all up in a <code>IO</code> monad</p>
+<pre><code class="haskell">main :: IO()
+main = do
+     [fileName] &lt;- getArgs
+     s &lt;- (BL.readFile fileName)
+     print (parallelRLE (numCapabilities) s)
+</code></pre>
+<p>With an improved algorithm and <code>IO</code> wrapper, it's time for a more
+complete benchmark:</p>
+<p><a href="/img/posts/beating-interview-problems-to-death-with-parallel-haskell/prle-plot.png"><img src="/img/posts/beating-interview-problems-to-death-with-parallel-haskell/prle-plot.jpg" alt="Performance Plot" width="600" height="400" /></a></p>
+<p>This was run on a <code>0.5GB</code> file, as the smaller <code>12MB</code> file used above
+runs so fast that is essentially instant.  Between 2 and 5 processors,
+we get a nicely ramped speedup.  After 5 processors, the bookkeeping
+overhead rears its ugly head again reversing the trend, and around 48
+processors (my system maximum), the parallelization ends up running as
+slowly as the unparallelized version.  This is certainly not the end
+of possible optimizations, but we have to stop sometime.</p>
+<p>While I'm no <code>Haskell</code> expert, parallelization which costs no more
+than swapping in a <code>parMap</code> and paying homage to the Big O gods is a
+very compelling reason to hammer out any other toy interview questions
+with <code>Haskell</code> in the future.</p>
+<p>Get the code <a href="https://github.com/malloc47/snippets/tree/master/prle">here</a>.  Feedback welcome.</p>
+
+    </div>
+  </div>
+      <div class="share">
+      <a href="https://twitter.com/share" class="twitter-share-button" data-via="malloc47">Tweet</a>
+    </div>
+
+</div>
+
+      </div>
+            <footer>
+	<div class="icons">
+	  <a href="/rss.xml" class="transparent rss"></a>
+	</div>
+	<div class="footer-padding">This site is licensed under <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0</a>.</div>
+      </footer>
+
+      </div>
+  </body>
+</html>

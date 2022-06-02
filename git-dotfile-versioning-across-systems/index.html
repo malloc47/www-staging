@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <!-- <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> -->
+    <title>malloc47/Git Dotfile Versioning Across Systems</title>
+    
+<meta name="keywords" content="">
+
+<meta property="og:url" content="https://www.malloc47.com/git-dotfile-versioning-across-systems/" />
+<meta property="og:title" content="Git Dotfile Versioning Across Systems" />
+<meta property="og:type" content="article" />
+
+    <meta name="viewport" content="width=720">
+    <link rel="preload" href="/font/Existence-Light-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Regular-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Italic-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Bold-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Inconsolata-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/assets/style.css">
+    <link id="day-css" rel="stylesheet" href="/assets/night.css" disabled>
+    <link id="night-css" rel="stylesheet" href="/assets/day.css" disabled>
+    <script src="/assets/main.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <div class="icons-left">
+      <canvas id="miniclock" width="50" height="50" class="selectable"></canvas>
+      <span id="toggle" class="transparent-light toggle selectable"></span>
+    </div>
+        <div class="icons">
+      <a href="mailto:malloc47@gmail.com" class="transparent gmail"></a>
+      <a href="https://www.github.com/malloc47" class="transparent github"></a>
+    </div>
+
+    <div id="container">
+            <header id="main-header">
+	<p>malloc(<span class="header-number"><a href="/">47</a></span>)</p>
+	<p class="header-name">&mdash;<a href="https://www.twitter.com/malloc47">Jarrell Waggoner</a>&mdash;</p>
+      </header>
+
+            <nav>
+      	<ul>
+      	  <li><a href="/" title="Home">Home</a></li>
+      	  <li><a href="/about" title="About">About</a></li>
+      	  <li><a href="/music" title="Music">Music</a></li>
+      	  <li><a href="/research" title="Research">Research</a></li>
+      	  <li><a href="/talks" title="Talks">Talks</a></li>
+      	  <li><a href="mailto:malloc47@gmail.com" title="Email">Contact</a></li>
+      	</ul>
+      </nav>
+
+      <div id="contents" role="main">
+        
+<div class="content">
+  <div class="content-wrap">
+    <p class="date">2012 <span class="date-dark">00</span>07 <span class="date-dark">00</span>29 </p>
+        <p class="social">
+      <a href="https://www.facebook.com/sharer.php?u=https%3A%2F%2Fwww.malloc47.com%2Fgit-dotfile-versioning-across-systems%2F&amp;t=Git+Dotfile+Versioning+Across+Systems"
+	 target="_blank"
+	 rel="nofollow"
+	 title="Share on Facebook">F</a>
+
+      <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.malloc47.com%2Fgit-dotfile-versioning-across-systems%2F&amp;text=Git+Dotfile+Versioning+Across+Systems&amp;via=malloc47&amp;related=malloc47"
+	 target="_blank"
+	 title="Tweet"
+	 rel="nofollow">T</a>
+    </p>
+
+    <header>Git Dotfile Versioning Across Systems</header>
+    <div class="content-body">
+      <p>For users of unix-like operating systems, treating your dotfiles like
+real code and keeping them in a repository is a supremely good idea.
+While there are a myriad of ways to go about this, the typical (albeit
+destructive) way to do this is by symlinking files in the repository
+to the home folder:</p>
+<pre><code class="bash">#!/bin/bash
+DEST=$HOME
+FILES=$(git ls-files | grep -v .gitignore | grep -v ^$(basename $0)$)
+for f in $FILES ; do
+    [ -n &quot;$(dirname $f)&quot; \
+      -a &quot;$(dirname $f)&quot; != &quot;.&quot; \
+      -a ! -d &quot;$DEST/$(dirname $f)&quot; ] \
+    &amp;&amp; mkdir -p $DEST/$(dirname $f)
+    ln -sf $(pwd)/$f $DEST/$f
+done
+</code></pre>
+<p>I specifically chose to have <code>FILES</code> populated using <code>git ls-files</code> to
+prevent any unversioned files from sneaking into the home folder,
+additionally filtering out both the <code>.gitignore</code> file, and the current
+script name (so it can be safely checked in as well).  After this, we
+loop over the files, creating appropriate directories if they do not
+exist, effectively symlinking the <em>entire repo</em> to the home folder,
+clobbering any files that are already there (without asking!).</p>
+<p>While most dotfiles won't care what system they are on, certain
+scripts or settings may be machine-dependent.  To accommodate this, I
+include a <code>~/.sys/`hostname`/</code> folder for every machine with
+system-specific files.  Then, when symlinking, we favor files listed
+in the <code>~/.sys/`hostname`/</code> folder rather than the top-level files:</p>
+<pre><code class="bash">if [ -e &quot;.sys/$(hostname)/$f&quot; ] ; then
+    ln -sf $(pwd)/.sys/$(hostname)/$f $DEST/$f
+else
+    ln -sf $(pwd)/$f $DEST/$f
+fi
+</code></pre>
+<p>Thus, for example, given <code>machine1</code> and <code>machine2</code> and a repo in the
+<code>~/dotfiles</code> directory with these files:</p>
+<pre><code>~/dotfiles/.gitconfig
+~/dotfiles/.sys/machine2/.gitconfig
+</code></pre>
+<p><code>machine1</code> will get a symlink from</p>
+<pre><code>~/dotfiles/.gitconfig
+</code></pre>
+<p>to <code>~/.gitconfig</code>, while <code>machine2</code> will instead get a symlink from</p>
+<pre><code>~/dotfiles/.sys/machine2/.gitconfig
+</code></pre>
+<p>to <code>~/.gitconfig</code>.  This variant of the script doesn't explicitly
+ignore the <code>.sys</code> folder itself so it will be added to the home folder
+as well.  Which, as an aside, can be useful by including something
+like this</p>
+<pre><code class="bash">[ -d ~/.sys/`hostname`/bin ] &amp;&amp; export PATH=~/.sys/`hostname`/bin:$PATH
+</code></pre>
+<p>in the <code>.bashrc</code> file such that specific scripts will be on the <code>PATH</code>
+for individual machines.</p>
+<p>So the final script, with a bit of input checking, looks like this:</p>
+<pre><code class="bash">#!/bin/bash
+set -e
+EXPECTED_ARGS=1
+if [ $# -lt $EXPECTED_ARGS ]
+then
+    echo &quot;Usage: `basename $0` directory&quot;
+    echo &quot;WILL clobber existing files without permission: Use at your own risk&quot;
+    exit 65
+fi
+
+DEST=$1
+FILES=$(git ls-files | grep -v .gitignore | grep -v ^$(basename $0)$)
+
+for f in $FILES ; do
+    echo $f
+    if [ -n &quot;$(dirname $f)&quot; -a &quot;$(dirname $f)&quot; != &quot;.&quot; -a ! -d &quot;$DEST/$(dirname $f)&quot; ] ; then
+        mkdir -p $DEST/$(dirname $f)
+    fi
+
+    if [ -e &quot;.sys/$(hostname)/$f&quot; ] ; then
+        ln -sf $(pwd)/.sys/$(hostname)/$f $DEST/$f
+    else
+        ln -sf $(pwd)/$f $DEST/$f
+    fi
+done
+</code></pre>
+<p>By making <code>DEST</code> a command-line parameter, a dry-run can be done by
+simply giving it an empty folder.  There's no issue doing this inside
+the repo's working tree, as only checked-in files will be transferred
+to the target directory:</p>
+<pre><code>&gt; mkdir tmp
+&gt; ./deploy tmp/
+</code></pre>
+<p>Doing this, the contents of the <code>tmp/</code> directory can be verified with
+<code>ls -al</code> to see exactly what the script will do to your home folder.
+Once satisfied, it can be run again with</p>
+<pre><code>&gt; ./deploy ~
+</code></pre>
+<p>to symlink all the files to the home folder proper.</p>
+<p>Feel free to grab an up-to-date version of this script from my own
+dotfile repo <a href="https://github.com/malloc47/config/blob/master/deploy">here</a>.</p>
+
+    </div>
+  </div>
+      <div class="share">
+      <a href="https://twitter.com/share" class="twitter-share-button" data-via="malloc47">Tweet</a>
+    </div>
+
+</div>
+
+      </div>
+            <footer>
+	<div class="icons">
+	  <a href="/rss.xml" class="transparent rss"></a>
+	</div>
+	<div class="footer-padding">This site is licensed under <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0</a>.</div>
+      </footer>
+
+      </div>
+  </body>
+</html>

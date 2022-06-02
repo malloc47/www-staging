@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <!-- <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> -->
+    <title>malloc47/QR Codes En Masse</title>
+    
+<meta name="keywords" content="">
+
+<meta property="og:url" content="https://www.malloc47.com/qr-codes-en-masse/" />
+<meta property="og:title" content="QR Codes En Masse" />
+<meta property="og:type" content="article" />
+
+    <meta name="viewport" content="width=720">
+    <link rel="preload" href="/font/Existence-Light-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Regular-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Italic-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Bold-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Inconsolata-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/assets/style.css">
+    <link id="day-css" rel="stylesheet" href="/assets/night.css" disabled>
+    <link id="night-css" rel="stylesheet" href="/assets/day.css" disabled>
+    <script src="/assets/main.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <div class="icons-left">
+      <canvas id="miniclock" width="50" height="50" class="selectable"></canvas>
+      <span id="toggle" class="transparent-light toggle selectable"></span>
+    </div>
+        <div class="icons">
+      <a href="mailto:malloc47@gmail.com" class="transparent gmail"></a>
+      <a href="https://www.github.com/malloc47" class="transparent github"></a>
+    </div>
+
+    <div id="container">
+            <header id="main-header">
+	<p>malloc(<span class="header-number"><a href="/">47</a></span>)</p>
+	<p class="header-name">&mdash;<a href="https://www.twitter.com/malloc47">Jarrell Waggoner</a>&mdash;</p>
+      </header>
+
+            <nav>
+      	<ul>
+      	  <li><a href="/" title="Home">Home</a></li>
+      	  <li><a href="/about" title="About">About</a></li>
+      	  <li><a href="/music" title="Music">Music</a></li>
+      	  <li><a href="/research" title="Research">Research</a></li>
+      	  <li><a href="/talks" title="Talks">Talks</a></li>
+      	  <li><a href="mailto:malloc47@gmail.com" title="Email">Contact</a></li>
+      	</ul>
+      </nav>
+
+      <div id="contents" role="main">
+        
+<div class="content">
+  <div class="content-wrap">
+    <p class="date">2012 <span class="date-dark">00</span>03 <span class="date-dark">00</span>24 </p>
+        <p class="social">
+      <a href="https://www.facebook.com/sharer.php?u=https%3A%2F%2Fwww.malloc47.com%2Fqr-codes-en-masse%2F&amp;t=QR+Codes+En+Masse"
+	 target="_blank"
+	 rel="nofollow"
+	 title="Share on Facebook">F</a>
+
+      <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.malloc47.com%2Fqr-codes-en-masse%2F&amp;text=QR+Codes+En+Masse&amp;via=malloc47&amp;related=malloc47"
+	 target="_blank"
+	 title="Tweet"
+	 rel="nofollow">T</a>
+    </p>
+
+    <header>QR Codes En Masse</header>
+    <div class="content-body">
+      <p>For the upcoming <a href="https://www.posscon.org/">POSSCON</a> here in Columbia, we had need of QR
+codes for the brochure.  Lots of them.  And while there are
+<a href="https://qrcode.kaywa.com/">some</a>
+<a href="https://goqr.me/">great</a>
+<a href="https://www.patrick-wied.at/static/qrgen/">online</a>
+resources,
+I wanted to create QR codes in batch.</p>
+<p>Of course, the online services could be batch processed with a dose
+of <code>curl</code> magic, but there is a more UNIX way: <code>libqrencode</code>.</p>
+<p>Creating a discrete QR code image is straightforward with the
+<code>qrencode</code> command:</p>
+<pre><code>qrencode -o output.png -s 50 &quot;https://www.malloc47.com&quot;
+</code></pre>
+<p>The <code>-s</code> parameter controls the size of the QR &quot;dots&quot; and therefore
+the output resolution.</p>
+<p>This is great if you don't need a vectorized format, but for
+print-quality work where you may not know the eventual <code>DPI</code>, having
+vectorized output (e.g. <code>eps</code>, and <code>svg</code>) is preferable.</p>
+<p>Again, the vast repositories of libre software come to the rescue
+here: <code>potrace</code> is designed for exactly this.  Annoyingly, it only
+handles bitmap (or the easy-to-generate <a href="https://en.wikipedia.org/wiki/Netpbm_format">pnm</a>) format, so a little
+<code>imagemagick</code> will take care of this:</p>
+<pre><code>convert output.png output.bmp
+</code></pre>
+<p>Now we can convert to a vector format easily:</p>
+<pre><code>potrace -e -o output.eps output.bmp # -e is for EPS
+potrace -s -o output.svg output.bmp # -s is for SVG
+</code></pre>
+<p>We can wrap it all up into a nice (<code>bash</code>) script:</p>
+<pre><code class="bash">#!/bin/bash
+set -e
+qrencode -o $1.png -s 50 &quot;$2&quot;
+convert $1.png $1.bmp
+potrace -e -o $1.eps $1.bmp
+rm $1.png $1.bmp
+</code></pre>
+<p>which takes a file name prefix and a string to be encoded. To generate
+a large set of QR codes with this script, simply create a file with
+file prefix-<code>URL</code>(or whatever data is to be encoded) pairs, each on a
+separate line,</p>
+<pre><code>google https://www.google.com
+amazon https://www.amazon.com
+reddit https://www.reddit.com
+....
+</code></pre>
+<p>and then loop over this file, line-by-line:</p>
+<pre><code class="bash">while read line ; do ./create-qr-code.sh $line ; done &lt; list.text
+</code></pre>
+<p>which conveniently gives us <code>google.eps</code>, <code>amazon.eps</code>, and
+<code>reddit.eps</code> files for their respective <code>URL</code>s.</p>
+<p>If there is uncertainty that your <code>URL</code>s are good (i.e. don't kick back
+<code>404</code>s), then you can augment the above script with this nice <code>curl</code>
+snippet (courtesy of <a href="https://stackoverflow.com/questions/2924422/how-do-i-determine-if-a-web-page-exists-with-shell-scripting">this</a> post on SO):</p>
+<pre><code class="bash">#!/bin/bash
+set -e
+curl -s --head $2 | head -n 1 | grep &quot;HTTP/1.[01] [23]..&quot; &gt; /dev/null
+if [ $? -eq 0 ] ; then
+    qrencode -o $1.png -s 50 &quot;$2&quot;
+    convert $1.png $1.bmp
+    potrace -e -o $1.eps $1.bmp
+    rm $1.png $1.bmp
+else
+    echo &quot;URL error: $2&quot; 1&gt;&amp;2
+fi
+</code></pre>
+<p>This will let you know which <code>URL</code>s don't come back with clean headers
+so you can give them further attention.  It won't capture everything
+that might go wrong, but it does give you a programmatic way to verify
+that all is well.</p>
+<p>Incidentally, all the tools used here can be installed on Arch with</p>
+<pre><code>pacman -S qrencode potrace imagemagick curl
+</code></pre>
+<p>Not exactly the prettiest shell glue, but it certainly beats slowly
+copy &amp; pasting in and out of a browser.</p>
+
+    </div>
+  </div>
+      <div class="share">
+      <a href="https://twitter.com/share" class="twitter-share-button" data-via="malloc47">Tweet</a>
+    </div>
+
+</div>
+
+      </div>
+            <footer>
+	<div class="icons">
+	  <a href="/rss.xml" class="transparent rss"></a>
+	</div>
+	<div class="footer-padding">This site is licensed under <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0</a>.</div>
+      </footer>
+
+      </div>
+  </body>
+</html>

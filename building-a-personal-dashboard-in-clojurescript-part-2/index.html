@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <!-- <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> -->
+    <title>malloc47/Building a Personal Dashboard in ClojureScript Part 2</title>
+    
+<meta name="keywords" content="">
+
+<meta property="og:url" content="https://www.malloc47.com/building-a-personal-dashboard-in-clojurescript-part-2/" />
+<meta property="og:title" content="Building a Personal Dashboard in ClojureScript Part 2" />
+<meta property="og:type" content="article" />
+
+    <meta name="viewport" content="width=720">
+    <link rel="preload" href="/font/Existence-Light-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Regular-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Italic-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Bold-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Inconsolata-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/assets/style.css">
+    <link id="day-css" rel="stylesheet" href="/assets/night.css" disabled>
+    <link id="night-css" rel="stylesheet" href="/assets/day.css" disabled>
+    <script src="/assets/main.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <div class="icons-left">
+      <canvas id="miniclock" width="50" height="50" class="selectable"></canvas>
+      <span id="toggle" class="transparent-light toggle selectable"></span>
+    </div>
+        <div class="icons">
+      <a href="mailto:malloc47@gmail.com" class="transparent gmail"></a>
+      <a href="https://www.github.com/malloc47" class="transparent github"></a>
+    </div>
+
+    <div id="container">
+            <header id="main-header">
+	<p>malloc(<span class="header-number"><a href="/">47</a></span>)</p>
+	<p class="header-name">&mdash;<a href="https://www.twitter.com/malloc47">Jarrell Waggoner</a>&mdash;</p>
+      </header>
+
+            <nav>
+      	<ul>
+      	  <li><a href="/" title="Home">Home</a></li>
+      	  <li><a href="/about" title="About">About</a></li>
+      	  <li><a href="/music" title="Music">Music</a></li>
+      	  <li><a href="/research" title="Research">Research</a></li>
+      	  <li><a href="/talks" title="Talks">Talks</a></li>
+      	  <li><a href="mailto:malloc47@gmail.com" title="Email">Contact</a></li>
+      	</ul>
+      </nav>
+
+      <div id="contents" role="main">
+        
+<div class="content">
+  <div class="content-wrap">
+    <p class="date">2021 <span class="date-dark">00</span>07 <span class="date-dark">00</span>09 </p>
+        <p class="social">
+      <a href="https://www.facebook.com/sharer.php?u=https%3A%2F%2Fwww.malloc47.com%2Fbuilding-a-personal-dashboard-in-clojurescript-part-2%2F&amp;t=Building+a+Personal+Dashboard+in+ClojureScript+Part+2"
+	 target="_blank"
+	 rel="nofollow"
+	 title="Share on Facebook">F</a>
+
+      <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.malloc47.com%2Fbuilding-a-personal-dashboard-in-clojurescript-part-2%2F&amp;text=Building+a+Personal+Dashboard+in+ClojureScript+Part+2&amp;via=malloc47&amp;related=malloc47"
+	 target="_blank"
+	 title="Tweet"
+	 rel="nofollow">T</a>
+    </p>
+
+    <header>Building a Personal Dashboard in ClojureScript Part 2</header>
+    <div class="content-body">
+      <p>Following the <a href="/building-a-personal-dashboard-in-clojurescript">previous installment</a> in my series on building a
+dashboard in ClojureScript, I'll be diving into the weather card.</p>
+<a href="/img/posts/cockpit/weather.png">
+  <img src="/img/posts/cockpit/weather.png" alt="Weather card" width="400" />
+</a>
+<p>Like any re-frame application, this comes in two major pieces:
+consuming from the API to update the application state, and rendering
+the state on the page. Before showing how this is wired up, however,
+let's first dive into the external weather API itself.</p>
+<h1 id="weather-api">Weather API</h1>
+<p>There are several different weather APIs with a free tier that can
+handle the minimal traffic of a single dashboard. I landed on <a href="https://openweathermap.org/api">Open
+Weather Map API</a>, which has both a free tier and an easy-to-use <a href="https://openweathermap.org/api/one-call-api">one
+call endpoint</a> containing all the weather granularity (current and
+day/hour/minute-level) needed for a reasonable dashboard.</p>
+<p>A sample request (with lots of fields omitted):</p>
+<pre><code class="bash">&gt; curl 'http://api.openweathermap.org/data/2.5/onecall?lat=&lt;latitude&gt;&amp;lon=&lt;longitude&gt;&amp;units=imperial&amp;appid=&lt;apikey&gt;' | jq .
+
+{
+  &quot;current&quot;: {
+    &quot;dt&quot;: 1625517908,
+    &quot;sunrise&quot;: 1625477417,
+    &quot;sunset&quot;: 1625531408,
+    &quot;temp&quot;: 82.31,
+    &quot;feels_like&quot;: 84.31,
+    &quot;pressure&quot;: 1017,
+    &quot;humidity&quot;: 57,
+    &quot;weather&quot;: [
+      {
+        &quot;id&quot;: 800,
+        &quot;main&quot;: &quot;Clear&quot;,
+        &quot;description&quot;: &quot;clear sky&quot;,
+        &quot;icon&quot;: &quot;01d&quot;
+      }
+    ]
+    ...
+  },
+  &quot;daily&quot;: [
+    {
+      &quot;dt&quot;: 1625504400,
+      &quot;sunrise&quot;: 1625477417,
+      &quot;sunset&quot;: 1625531408,
+      &quot;temp&quot;: {
+        &quot;day&quot;: 83.12,
+        &quot;min&quot;: 66.2,
+        &quot;max&quot;: 83.82,
+        &quot;night&quot;: 75.74,
+        &quot;eve&quot;: 81.82,
+        &quot;morn&quot;: 67.89
+      },
+      &quot;feels_like&quot;: {
+        &quot;day&quot;: 83.86,
+        &quot;night&quot;: 76.21,
+        &quot;eve&quot;: 83.5,
+        &quot;morn&quot;: 68.29
+      },
+      &quot;humidity&quot;: 49,
+      &quot;weather&quot;: [
+        {
+          &quot;id&quot;: 500,
+          &quot;main&quot;: &quot;Rain&quot;,
+          &quot;description&quot;: &quot;light rain&quot;,
+          &quot;icon&quot;: &quot;10d&quot;
+        }
+      ],
+      &quot;rain&quot;: 0.53,
+      ...
+    },
+    ...
+  ],
+  &quot;minutely&quot;: [...],
+  &quot;hourly&quot;: [...],
+  &quot;alerts&quot;: [...]
+}
+</code></pre>
+<p>In addition, we'll want to tie the payload to a set of weather icons
+supplied by the <a href="https://erikflowers.github.io/weather-icons/">Weather Icons</a> font together using this <a href="https://github.com/erikflowers/weather-icons/issues/204">mapping</a>
+(represented below as <code>id-&gt;icon</code>).</p>
+<h1 id="api-client">API Client</h1>
+<p>In re-frame parlance, we use an &quot;effects handler&quot; to make http calls,
+which is helpfully provided by <a href="https://github.com/day8/re-frame-http-fx">re-frame-http-fx</a>. This allows us to
+define a <code>::fetch-weather</code> event analogous to the <code>curl</code> command above:</p>
+<pre><code class="clojure">(re-frame/reg-event-fx
+ ::fetch-weather
+ (fn [_ _]
+   {:http-xhrio
+    {:method :get
+     :uri    &quot;http://api.openweathermap.org/data/2.5/onecall&quot;
+     :params {:lat   (:lat config/home)
+              :lon   (:lon config/home)
+              :units &quot;imperial&quot;
+              :appid config/open-weather-api-key}
+     :response-format (ajax/json-response-format {:keywords? true})
+     :on-success      [::events/http-success [:weather]]
+     :on-failure      [::events/http-fail [:weather]]}}))
+</code></pre>
+<p>where the success and fail events are defined as:</p>
+<pre><code class="clojure">(re-frame/reg-event-db
+ ::http-success
+ (fn [db [_ key-path result]]
+   (assoc-in db key-path result)))
+
+(re-frame/reg-event-db
+ ::http-fail
+ (fn [db [_ key-path]]
+   (assoc-in db key-path {})))
+</code></pre>
+<p>We can trigger this event at regular intervals, similar to the clock
+card:</p>
+<pre><code class="clojure">(defn init []
+  ...
+  (re-frame/dispatch
+   [::poll/set-rules
+    [{:interval                 900 ; 15 minutes
+      :event                    [::weather/fetch-weather]
+      :dispatch-event-on-start? true}]])
+  ...)
+</code></pre>
+<p>The 15 minute interval is set such that the API's free tier daily
+request limit is apportioned throughout the day with some headroom
+remaining.</p>
+<p>Finally, it is customary to create a &quot;level 2&quot; extractor subscription
+to pull the payload back out of the application state even though it
+is largely a trivial subscription:</p>
+<pre><code class="clojure">(re-frame/reg-sub
+ ::weather
+ (fn [db _]
+   (:weather db)))
+</code></pre>
+<p>Getting the weather payload ensconced in <code>re-frame.db/app-db</code> with a
+basic extractor is but our first step. It would be awkward for our
+view to consume directly from the full API payload as it contains many
+elements that would need to be filtered out or ignored; it also has
+the disadvantage that re-frame would have to re-render the weather
+element every time the payload is fetched even for UI elements that do
+not need to change. Enter the &quot;level 3&quot; <a href="https://day8.github.io/re-frame/subscriptions/">materialized
+view</a>, which filters down the payload into meaningful
+units of work. In this case, these units are:</p>
+<ul>
+<li>Sunrise and sunset time</li>
+<li>Current conditions</li>
+<li>6 day forecast</li>
+</ul>
+<p>The sunrise/sunset subscription is easy once we've defined the
+<code>epoch-&gt;local-date</code> helper (that uses <a href="https://github.com/andrewmcveigh/cljs-time">cljs-time</a> internally) to
+parse the times into an object:</p>
+<pre><code class="clojure">(re-frame/reg-sub
+ ::sun
+ :&lt;- [::weather]
+ (fn [{{:keys [sunrise sunset]} :current} _]
+   {:sunrise (-&gt; sunrise epoch-&gt;local-date .toUsTimeString)
+    :sunset  (-&gt; sunset epoch-&gt;local-date .toUsTimeString)}))
+</code></pre>
+<p>The current conditions subscription is also relatively simple,
+involving some light formatting (some of which could arguably be
+pushed down to the view layer):</p>
+<pre><code class="clojure">(re-frame/reg-sub
+ ::conditions
+ :&lt;- [::weather]
+ (fn [{{humidity                :humidity
+        feels-like              :feels_like
+        current-temp            :temp
+        [{:keys [description]}] :weather} :current
+       [{:keys                [rain snow]
+         {low :min high :max} :temp}]     :daily} _]
+   {:humidity    (-&gt; humidity (str &quot;%&quot;))
+    :feels-like  (-&gt; feels-like int (str &quot;°&quot;))
+    :description (some-&gt; description str/capitalize)
+    :rain        (some-&gt; rain mm-&gt;in (round-nonzero 2) (str &quot;\&quot;&quot;))
+    :snow        (some-&gt; snow mm-&gt;in (round-nonzero 2) (str &quot;\&quot;&quot;))
+    :temp        (some-&gt; current-temp int (str &quot;°&quot;))
+    :low         (some-&gt; low int (str &quot;°&quot;))
+    :high        (some-&gt; high int (str &quot;°&quot;))}))
+</code></pre>
+<p>This subscription plucks the current weather conditions from the
+payload (using the fancy <a href="https://clojure.org/guides/destructuring">destructuring</a> that makes Clojure so
+effective) and returns a new, sparser map with the values formatted
+and ready to be used in a view.</p>
+<p>The most complex subscription is the forecast, which involves
+processing the <code>:daily</code> list of elements and returning a new list of
+ready-to-template maps:</p>
+<pre><code class="clojure">(re-frame/reg-sub
+ ::forecast
+ :&lt;- [::weather]
+ (fn [{forecast :daily} _]
+   (-&gt;&gt; forecast
+        rest                            ; skip today
+        (map (fn [{date                 :dt
+                   {low :min high :max} :temp
+                   rain                 :rain
+                   snow                 :snow
+                   [{icon-id :id} &amp; _]  :weather}]
+               {:epoch   date
+                :weekday (-&gt; date
+                             epoch-&gt;local-date
+                             .getWeekday
+                             number-&gt;weekday)
+                :icon    (id-&gt;icon icon-id)
+                :high    (some-&gt; high int (str &quot;°&quot;))
+                :low     (some-&gt; low int (str &quot;°&quot;))
+                :rain    (some-&gt; rain mm-&gt;in (round-nonzero 1) (str &quot;\&quot;&quot;))
+                :snow    (some-&gt; snow mm-&gt;in (round-nonzero 1) (str &quot;\&quot;&quot;))}))
+        (take 6))))
+</code></pre>
+<p>This is similar to the current conditions subscription above; the
+major change here is that we are <code>map</code>ing over the list of forecasts
+and taking only a fixed number of them.</p>
+<p>This wraps up the event/subscription handling; with this code, we now
+ingest from the API and have defined a graph of subscriptions that
+whittles the payload down into filtered chunks that are ready to be
+placed into our view.</p>
+<h1 id="weather-card">Weather Card</h1>
+<p>Creating views like the weather card is as much as art as it is an
+engineering effort, and I don't expect I'd win any awards for either
+aspect.</p>
+<p>Like any normal Clojure function, breaking our view into smaller
+pieces will greatly aid readability:</p>
+<pre><code class="clojure">(defn weather []
+  [:&gt; Card
+   [:&gt; CardContent
+    [weather-description]
+    [weather-conditions]
+    [weather-forecast]]])
+</code></pre>
+<p>Like the <a href="/building-a-personal-dashboard-in-clojurescript">previous installment</a>, the view uses uses the
+<a href="https://material-ui.com/">Material-UI</a> react framework (i.e., the <code>Card</code>, <code>CardContent</code>
+components and many more) which comes with much saner style defaults
+than any CSS I could cook up.</p>
+<pre><code class="clojure">(defn weather-conditions []
+  [:&gt; Grid {:container true :justify &quot;center&quot;}
+   [:&gt; Grid {:item true :xs 3}
+    [:&gt; Typography {:variant &quot;h1&quot;}
+     ;; Display a large icon of current conditions
+     [:i {:class (str &quot;wi wi-&quot;
+                      @(re-frame/subscribe [::weather/icon]))}]]]
+   [:&gt; Grid {:item true :xs 5}
+    [:&gt; Typography {:align &quot;center&quot; :variant &quot;h1&quot;
+                    :display &quot;inline&quot;}
+     ;; Large view of the current temperature
+     (:temp @(re-frame/subscribe [::weather/conditions]))]]
+   [:&gt; Grid {:item true :xs 2}
+    (let [{:keys [low high]}
+	     @(re-frame/subscribe [::weather/conditions])]
+      [:&gt; Typography {:align &quot;right&quot; :variant &quot;h4&quot;}
+       high [:br] low])]])
+</code></pre>
+<p>With some minor extra styling, we end up with a nice, large display of
+the current temperature:</p>
+<a href="/img/posts/cockpit/weather-current.png">
+  <img src="/img/posts/cockpit/weather-current.png" alt="Current weather" width="400" />
+</a>
+<p>Like the companion subscription, the forecast view <code>map</code>s over the
+individual days in the subscribed output to produce, in this case,
+<code>Grid</code> items to fill the card:</p>
+<pre><code class="clojure">(defn weather-forecast []
+  [:&gt; Grid {:container true}
+   (map
+    (fn [{:keys [epoch weekday icon high low rain snow]}]
+      ^{:key epoch}
+      [:&gt; Grid {:item true :xs 2}
+       [:&gt; Typography {:key epoch
+                       :variant &quot;body1&quot;
+                       :align &quot;center&quot;}
+        weekday]
+       [:&gt; Typography {:align &quot;center&quot; :variant &quot;h5&quot;}
+        [:i {:class (str &quot;wi wi-&quot; icon)}]]
+       [:&gt; Typography {:align &quot;center&quot; :variant &quot;subtitle2&quot;}
+        high
+        (gstring/unescapeEntities &quot;&amp;#8194;&quot;)
+        low
+	    (when rain
+          [:&lt;&gt; [:br] (list &quot; &quot; rain)])
+        (when snow
+          [:&lt;&gt;
+            (list &quot; &quot; snow)])]])
+    @(re-frame/subscribe [::weather/forecast]))])
+</code></pre>
+<p>When generating view elements dynamically, specifying the <code>key</code> is
+important for re-frame (and React under-the-hood) to reliably match up
+elements that must be re-rendered when the payload changes. This gives
+us our 6-day forecast (which is all I could fit on the card even
+though the API returns more data):</p>
+<a href="/img/posts/cockpit/weather-forecast.png">
+  <img src="/img/posts/cockpit/weather-forecast.png" alt="Weather forecast" width="400" />
+</a>
+<p>Last but not least, having a general text description of the weather
+is handy to capture leftover details that do not appear elsewhere in
+the UI:</p>
+<pre><code class="clojure">(defn weather-description []
+  (let [{:keys [humidity feels-like description rain snow]}
+        @(re-frame/subscribe [::weather/conditions])]
+    (-&gt;&gt; [{:content description :render? description}
+          {:prefix &quot;Feels like &quot; :content feels-like :render? true}
+          {:content humidity :render? true}
+          {:postfix &quot; rain&quot; :content rain :render? rain}
+          {:postfix &quot; snow&quot; :content snow :render? snow}]
+         (map (fn [{:keys [prefix postfix content render?]}]
+                (if render?
+                  (-&gt;&gt; [prefix content postfix] (remove nil?) vec)
+                  [])))
+         (remove empty?)
+         (interpose [&quot; | &quot;])
+         (apply concat [:&gt; Typography {:align &quot;center&quot;
+                                       :color &quot;textSecondary&quot;
+                                       :variant &quot;body1&quot;}])
+         vec)))
+</code></pre>
+<p>This function is more elaborate than it needs to be, but is handy for
+adding new things to appear in the description--it first converts the
+individual datapoints into a vector of maps that (depending on the
+value of the <code>:render?</code> key) are subsequently concatenated into a
+<code>|</code>-separated series of descriptions:</p>
+<a href="/img/posts/cockpit/weather-description.png">
+  <img src="/img/posts/cockpit/weather-description.png" alt="Weather description" width="400" />
+</a>
+<p>The full working code is available in <a href="https://github.com/malloc47/cockpit/blob/ac0ba2f5c7d985aceca03fdb079050d498983587/src/cljs/cockpit/weather.cljs">weather.cljs</a> and
+<a href="https://github.com/malloc47/cockpit/blob/ac0ba2f5c7d985aceca03fdb079050d498983587/src/cljs/cockpit/views.cljs">views.cljs</a> which include a few extra visual tweaks and custom
+React components. Also omitted from the code in this post are a few
+visual details from the screenshot above, including the &quot;refresh&quot;
+button that triggers the <code>::fetch-weather</code> event on-demand and the
+timer in the corner showing how much time has elapsed since the last
+fetch--not essential features for everyday use, but valuable for
+debugging.</p>
+<p>With luck, the next post in this series will get to my favorite part
+of the dashboard: the transit card.</p>
+<table>
+<thead></thead>
+<tbody>
+<tr><td><a href="/building-a-personal-dashboard-in-clojurescript">Part 1</a></td><td>Part 2</td><td><a href="/building-a-personal-dashboard-in-clojurescript-part-3">Part 3</a></td></tr>
+</tbody>
+</table>
+
+    </div>
+  </div>
+      <div class="share">
+      <a href="https://twitter.com/share" class="twitter-share-button" data-via="malloc47">Tweet</a>
+    </div>
+
+</div>
+
+      </div>
+            <footer>
+	<div class="icons">
+	  <a href="/rss.xml" class="transparent rss"></a>
+	</div>
+	<div class="footer-padding">This site is licensed under <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0</a>.</div>
+      </footer>
+
+      </div>
+  </body>
+</html>

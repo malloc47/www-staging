@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <!-- <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> -->
+    <title>malloc47/Producing LaTeX from NumPy Arrays</title>
+    
+<meta name="keywords" content="">
+
+<meta property="og:url" content="https://www.malloc47.com/producing-latex-from-numpy-arrays/" />
+<meta property="og:title" content="Producing LaTeX from NumPy Arrays" />
+<meta property="og:type" content="article" />
+
+    <meta name="viewport" content="width=720">
+    <link rel="preload" href="/font/Existence-Light-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Regular-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Italic-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Bold-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Inconsolata-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/assets/style.css">
+    <link id="day-css" rel="stylesheet" href="/assets/night.css" disabled>
+    <link id="night-css" rel="stylesheet" href="/assets/day.css" disabled>
+    <script src="/assets/main.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <div class="icons-left">
+      <canvas id="miniclock" width="50" height="50" class="selectable"></canvas>
+      <span id="toggle" class="transparent-light toggle selectable"></span>
+    </div>
+        <div class="icons">
+      <a href="mailto:malloc47@gmail.com" class="transparent gmail"></a>
+      <a href="https://www.github.com/malloc47" class="transparent github"></a>
+    </div>
+
+    <div id="container">
+            <header id="main-header">
+	<p>malloc(<span class="header-number"><a href="/">47</a></span>)</p>
+	<p class="header-name">&mdash;<a href="https://www.twitter.com/malloc47">Jarrell Waggoner</a>&mdash;</p>
+      </header>
+
+            <nav>
+      	<ul>
+      	  <li><a href="/" title="Home">Home</a></li>
+      	  <li><a href="/about" title="About">About</a></li>
+      	  <li><a href="/music" title="Music">Music</a></li>
+      	  <li><a href="/research" title="Research">Research</a></li>
+      	  <li><a href="/talks" title="Talks">Talks</a></li>
+      	  <li><a href="mailto:malloc47@gmail.com" title="Email">Contact</a></li>
+      	</ul>
+      </nav>
+
+      <div id="contents" role="main">
+        
+<div class="content">
+  <div class="content-wrap">
+    <p class="date">2013 <span class="date-dark">00</span>01 <span class="date-dark">00</span>29 </p>
+        <p class="social">
+      <a href="https://www.facebook.com/sharer.php?u=https%3A%2F%2Fwww.malloc47.com%2Fproducing-latex-from-numpy-arrays%2F&amp;t=Producing+LaTeX+from+NumPy+Arrays"
+	 target="_blank"
+	 rel="nofollow"
+	 title="Share on Facebook">F</a>
+
+      <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.malloc47.com%2Fproducing-latex-from-numpy-arrays%2F&amp;text=Producing+LaTeX+from+NumPy+Arrays&amp;via=malloc47&amp;related=malloc47"
+	 target="_blank"
+	 title="Tweet"
+	 rel="nofollow">T</a>
+    </p>
+
+    <header>Producing LaTeX from NumPy Arrays</header>
+    <div class="content-body">
+      <p>For my comprehensive exam, I needed to quickly convert some NumPy
+arrays into nice-looking LaTeX <code>array</code> elements.  The TeX Stack
+Exchange site has a good <a href="https://tex.stackexchange.com/questions/54990/convert-numpy-array-into-tabular">answer</a> for <code>tabular</code> environments, but
+wasn't quite suited to the <code>array</code> environment.  The usual answer here
+would be <a href="https://mpastell.com/pweave/">Pweave</a> but, being short on time, I ended up rolling my
+own function instead:</p>
+<pre><code class="python">def to_latex(a,label='A'):
+    sys.stdout.write('\[ '
+                     + label
+                     + ' = \\left| \\begin{array}{'
+                     + ('c'*a.shape[1])
+                     + '}\n' )
+    for r in a:
+        sys.stdout.write(str(r[0]))
+        for c in r[1:]:
+            sys.stdout.write(' &amp; '+str(c))
+        sys.stdout.write('\\\\\n')
+    sys.stdout.write('\\end{array} \\right| \]\n')
+</code></pre>
+<p>Here's an incomplete snippet of it in action, where I convolve an
+array <code>t</code> with four different filters, producing a latex formula for
+each result:</p>
+<pre><code class="python">filters = (('A \\oplus H_1',h1)
+           , ('A \\oplus H_2',h2)
+           , ('A \\oplus H_3',h3)
+           , ('A \\oplus H_4',h4))
+
+for label,f in filters:
+    t2 = scipy.signal.convolve(t,f,'same')
+    to_latex(t2.astype('uint8'),label=label)
+</code></pre>
+<p>I'll likely get around to expanding this into a full package sometime
+in the future, since there's a lot that is hard coded (the <code>\[ \]</code>
+environment, stringification of the array, the fact that all columns
+are centered, etc.).  A gist of the function is available <a href="https://gist.github.com/4665827">here</a>.</p>
+
+    </div>
+  </div>
+      <div class="share">
+      <a href="https://twitter.com/share" class="twitter-share-button" data-via="malloc47">Tweet</a>
+    </div>
+
+</div>
+
+      </div>
+            <footer>
+	<div class="icons">
+	  <a href="/rss.xml" class="transparent rss"></a>
+	</div>
+	<div class="footer-padding">This site is licensed under <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0</a>.</div>
+      </footer>
+
+      </div>
+  </body>
+</html>

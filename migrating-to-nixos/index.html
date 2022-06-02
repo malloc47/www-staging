@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <!-- <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> -->
+    <title>malloc47/Migrating to NixOS</title>
+    
+<meta name="keywords" content="">
+
+<meta property="og:url" content="https://www.malloc47.com/migrating-to-nixos/" />
+<meta property="og:title" content="Migrating to NixOS" />
+<meta property="og:type" content="article" />
+
+    <meta name="viewport" content="width=720">
+    <link rel="preload" href="/font/Existence-Light-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Regular-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Italic-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Bold-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Inconsolata-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/assets/style.css">
+    <link id="day-css" rel="stylesheet" href="/assets/night.css" disabled>
+    <link id="night-css" rel="stylesheet" href="/assets/day.css" disabled>
+    <script src="/assets/main.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <div class="icons-left">
+      <canvas id="miniclock" width="50" height="50" class="selectable"></canvas>
+      <span id="toggle" class="transparent-light toggle selectable"></span>
+    </div>
+        <div class="icons">
+      <a href="mailto:malloc47@gmail.com" class="transparent gmail"></a>
+      <a href="https://www.github.com/malloc47" class="transparent github"></a>
+    </div>
+
+    <div id="container">
+            <header id="main-header">
+	<p>malloc(<span class="header-number"><a href="/">47</a></span>)</p>
+	<p class="header-name">&mdash;<a href="https://www.twitter.com/malloc47">Jarrell Waggoner</a>&mdash;</p>
+      </header>
+
+            <nav>
+      	<ul>
+      	  <li><a href="/" title="Home">Home</a></li>
+      	  <li><a href="/about" title="About">About</a></li>
+      	  <li><a href="/music" title="Music">Music</a></li>
+      	  <li><a href="/research" title="Research">Research</a></li>
+      	  <li><a href="/talks" title="Talks">Talks</a></li>
+      	  <li><a href="mailto:malloc47@gmail.com" title="Email">Contact</a></li>
+      	</ul>
+      </nav>
+
+      <div id="contents" role="main">
+        
+<div class="content">
+  <div class="content-wrap">
+    <p class="date">2019 <span class="date-dark">00</span>03 <span class="date-dark">00</span>14 </p>
+        <p class="social">
+      <a href="https://www.facebook.com/sharer.php?u=https%3A%2F%2Fwww.malloc47.com%2Fmigrating-to-nixos%2F&amp;t=Migrating+to+NixOS"
+	 target="_blank"
+	 rel="nofollow"
+	 title="Share on Facebook">F</a>
+
+      <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.malloc47.com%2Fmigrating-to-nixos%2F&amp;text=Migrating+to+NixOS&amp;via=malloc47&amp;related=malloc47"
+	 target="_blank"
+	 title="Tweet"
+	 rel="nofollow">T</a>
+    </p>
+
+    <header>Migrating to NixOS</header>
+    <div class="content-body">
+      <p>After running <a href="https://www.archlinux.org/">Arch Linux</a> for the last decade, I've finally made
+the jump to <a href="https://nixos.org/">NixOS</a>. For me, this means updating two VMs
+(VirtualBox and VMWare) and a bare-metal install (an aging MacBook
+Air).</p>
+<p>I've repurposed my old <a href="https://github.com/malloc47/config">config repo</a> to store both my dotfiles as
+well as the NixOS <code>configuration.nix</code> files.</p>
+<p>Since I was already making a big transition, I decided to take the
+opportunity to retool a few more things in my dev setup:</p>
+<table>
+<thead>
+<tr><th> </th><th>Old</th><th>New</th></tr>
+</thead>
+<tbody>
+<tr><td>OS</td><td>Arch Linux</td><td>NixOS</td></tr>
+<tr><td>Shell</td><td>Bash</td><td>Zsh</td></tr>
+<tr><td>Terminal</td><td>urxvt</td><td>Alacritty</td></tr>
+<tr><td>Multiplexer</td><td>screen</td><td>tmux</td></tr>
+<tr><td>Window Manager</td><td>XMonad</td><td>i3</td></tr>
+<tr><td>Editor</td><td>Emacs</td><td>Emacs</td></tr>
+</tbody>
+</table>
+<p>I initially wanted to make the jump from X11 to Wayland, but NixOS
+<a href="https://github.com/NixOS/nixpkgs/projects/11">isn't quite ready</a> just yet.</p>
+<p>My goal for this writeup is to document the rationale for making the
+switch, capture the stuff I wish I had known before diving into the
+Nix language, and describe the particulars of how I organize my new
+setup.</p>
+<h1 id="motivation">Motivation</h1>
+<p>While I lack a single compelling reason to make the jump, there are a
+few pain points with my Arch setup that, together, pushed me to give
+NixOS a shot:</p>
+<ul>
+<li>
+<p><strong>Falling behind on Arch changes.</strong> While I benefited a few times
+from Arch's rolling update process, in practice I've rarely found it
+was something I needed. Not staying on top of Arch updates
+invariably leads to painful upgrades that take time to work
+through. Taking snapshots of my VMs reduced a lot of this upgrade
+risk, but it takes more time than I'm willing to spend to upgrade my
+bare-metal Arch install after neglecting it for extended periods.</p>
+</li>
+<li>
+<p><strong>Package drift among machines.</strong> Having my VMs get slightly
+different versions of packages from my Linux laptop, or forgetting
+to install the same set of packages across all machines was a minor
+but consistent annoyance. I kept a list of arch packages that I'd
+move from machine to machine, but nothing forced me to audit that
+the installed packages matched the list.</p>
+</li>
+<li>
+<p><strong>Limited local install options.</strong> I've grown reliant on Docker for
+infrastructural components (e.g. Postgres), but being able to
+install specific dev tools on a per-project basis (I've been playing
+with <a href="https://www.qgis.org/">QGIS</a> recently) is something I've constantly found
+painful, the few times I've bothered at all.</p>
+</li>
+</ul>
+<h1 id="nix">Nix</h1>
+<p>The big ideas behind the Nix ecosystem are covered in <a href="https://nixos.org/nix/">detail
+elsewhere</a>; what was appealing to me in particular was Nix's
+emphasis on reproducibility, file-driven configuration, and functional
+approach to its package repository, nixpkgs. You can think of the Nix
+package manager as a hybrid of <code>apt-get</code> and Python's <code>virtualenv</code>
+with a sprinkling of <code>git</code>; you can use Nix to build multiple,
+isolated sets of packages on, say, a per-project basis, with the
+guarantee that Nix only needs to fetch (or build) shared dependencies
+once. Nix stores all built packages in the Nix store which serves as a
+local cache. Nix grafts together a collection of Linux directories
+(<code>bin</code>, <code>usr</code>, etc.) by symlinking the appropriate files contained in
+the packages that live in the Nix store. This isolated environment can
+be system-wide (in the case of NixOS), local to your user (<code>nix-env</code>)
+or tailed for a specific project (<code>nix-shell</code>).</p>
+<p><code>nix-shell</code> serves a few different roles in the Nix ecosystem, but one
+of those roles is to make dependencies defined in a &quot;derivation&quot;
+(Nix's version of a makefile) available for use in a shell. These
+derivations are used to define a hermetically-sealed environment for
+building a package as well as collecting the commands to configure and
+run a build. We can re-use just the environment-prep part of a
+derivation along with <code>nix-shell</code> to drop us into a terminal that has
+exactly the packages we want. Here's an example of a derivation for a
+TeX project:</p>
+<pre><code class="nix">with import &lt;nixpkgs&gt; {};
+
+stdenv.mkDerivation {
+  name = &quot;my-document&quot;;
+  buildInputs = with pkgs; [
+    texlive.combined.scheme-full
+  ];
+  shellHook = &quot;pdflatex document.tex&quot;
+}
+</code></pre>
+<p>With this derivation placed in <code>shell.nix</code>, running a <code>nix-shell</code> in
+the same directory will fetch the entirety of TeX Live (which is <a href="https://tex.stackexchange.com/questions/302676/how-large-is-the-full-install-of-texlive/323739">not
+small</a>)
+and make all the related files, configuration, tools, fonts, commands,
+etc. available in the shell. It then uses one of these tools
+(<code>pdflatex</code>) to run the &quot;build&quot; of <code>document.tex</code> to generate a
+PDF. Writing a full derivation file isn't necessary if you don't need
+to be dropped into a shell for further work. The following is
+equivalent to the derivation above, but does not keep TeX Live
+available in the shell after it is done building the document:</p>
+<pre><code class="nix">nix run nixpkgs.texlive.combined.scheme-full -c pdflatex document.tex
+</code></pre>
+<p>I only rarely need TeX, so being able to make TeX available on a
+per-project basis without having all its commands pollute my <code>PATH</code>
+when doing non-TeX work is useful. Going further, I can mix-and-match
+versions of Python, the JVM, Postgres, etc. independently for each
+project I have without having to use <code>sudo</code>.</p>
+<h1 id="nixpkgs">nixpkgs</h1>
+<p>While the Nix Expression Language is somewhat esoteric, the big ideas
+aren't far removed from features in mainstream functional
+languages. nixpkgs in particular can be conceptualized as a single
+large map (called an Attribute Set or attrset in Nix) from keys to
+derivations:</p>
+<pre><code class="nix">{
+  # &lt;snip&gt;
+  tmux = callPackage ../tools/misc/tmux { };
+  # &lt;snip&gt;
+}
+</code></pre>
+<p>You can see a meaty example of nixpkg's package list <a href="https://github.com/NixOS/nixpkgs/blob/master/pkgs/top-level/all-packages.nix">here</a>. This
+would normally be an unwieldy thing to build in memory on every
+interaction with the package manager, however Nix lazily loads the
+contents of this attrset. Nix even provides the option to make these
+attribute sets &quot;recursive&quot; allowing the values to reference sibling
+keys, e.g.</p>
+<pre><code class="nix">rec { a = 2; b = a+3; }
+</code></pre>
+<p>nixpkgs provides <a href="https://nixos.org/nixos/nix-pills/nixpkgs-overriding-packages.html">facilities</a> to change or update existing
+packages with custom configuration, and add new entries to the package
+attrset. It does this by way of &quot;overlays&quot; which are a <a href="https://r6.ca/blog/20140422T142911Z.html">fixed
+point</a> over the package attrset. Nix's approach of effectively
+rebuilding a facsimile of the <a href="https://www.pathname.com/fhs/">FHS</a> on every run means that
+&quot;manual&quot; intervention to install things outside of a package manager
+(say, copying a <code>ttf</code> font into <code>/usr/share/fonts</code>) is not feasible,
+so having an easy way to fold your own set of custom packages into the
+package attrset is vital.</p>
+<p>The other important aspect to nixpkgs is that it is versioned in git
+(conveniently alongside NixOS in the same repo). The Nix CLI tools can
+fetch and install the latest set of packages by rolling the local
+clone of nixpkgs forward and then rebuilding your packages. Such a
+rebuild can apply to all the packages on your entire system, or just a
+particular derivation's local packages. This can work the other
+direction as well: If you prefer your package set to remain completely
+fixed, you can pin the nixpkgs clone to a particular git SHA. Stable
+releases of NixOS are handled as branches of the nixpkgs repo, which
+do get critical updates but avoid all the bleeding-edge changes that
+the <code>master</code> branch has.</p>
+<h1 id="nixos">NixOS</h1>
+<p>NixOS goes a step further and utilizes attrsets to configure the OS
+itself. Not unlike application configuration (for which there
+<a href="https://github.com/lightbend/config">are</a>
+<a href="https://github.com/markbates/configatron">numerous</a>
+<a href="https://github.com/weavejester/environ">libraries</a>), NixOS defines
+your OS in a series of one or more attrsets that are merged together;
+unlike traditional configuration approaches that use a
+last-merged-wins strategy, however, NixOS's <a href="https://nixos.wiki/wiki/NixOS:Properties">properties</a> provide
+per-field control over the priority of merges along with conditionals
+that control whether an option is merged or not.</p>
+<p>This approach to OS configuration is useful for defining options
+amongst a set of similar but not identical OSs. For my NixOS config,
+I've created a base <a href="https://github.com/malloc47/config/blob/cd6d1568f50c9b839f5146b45362cd6c4d857882/nixos/configuration.nix"><code>configuration.nix</code></a> file that contains common
+options that I want set across all my machines (abbreviated example
+here):</p>
+<pre><code class="nix">{ config, pkgs, ... }:
+{
+  time.timeZone = &quot;America/Chicago&quot;;
+  environment.systemPackages = with pkgs; [feh vim wget];
+  programs.zsh.enable = true;
+  users.users.johndoe.shell = pkgs.zsh;
+  # &lt;snip&gt;
+}
+</code></pre>
+<p>I then import this common file into host-specific files that each
+contain options specific to that particular machine, e.g. a VM host:</p>
+<pre><code class="nix">{ config, pkgs, ... }:
+{
+  imports = [ ./configuration.nix ];
+  services.vmwareGuest.enable = true;
+  users.users.johndoe.shell = mkOptionDefault pkgs.bash;
+  # &lt;snip&gt;
+}
+</code></pre>
+<p>Note the <code>mkOptionDefault</code> function that reduces the priority of the
+<code>pkgs.bash</code> value from the default of 100 to 1500. Had I left off
+<code>mkOptionDefault</code>, NixOS would complain that <code>johndoe.shell</code> was
+declared twice. However, by reducing its priority, the
+<code>configuration.nix</code>'s definition of <code>johndoe.shell = pkgs.zsh</code> will
+take priority, despite it not being the &quot;last&quot; merged. In actuality,
+NixOS builds the configuration as a whole without any notion of
+ordering, and will fail loudly if it gets two property values with
+equal priority.</p>
+<p>Notice above that the NixOS configuration includes option values that
+range from plain strings (e.g. <code>time.timeZone</code>) to more complex
+<code>services</code> that wire up nontrivial operations (schedule daemons to
+auto start, create systemd services, modprobe kernel modules,
+etc.). Unlike nixpkgs, NixOS doesn't try to specify all these
+configuration options in a giant flat file; rather, it splits options
+into <a href="https://nixos.wiki/wiki/NixOS_Modules">modules</a> which keep options grouped into logical
+units. Modules let you create new options easily, as well at attach a
+meaning to each option by doing things such as configuring other
+module's options, composing other modules together, writing files
+(also done through options, interestingly), and assorted other
+activities.</p>
+<p>To introduce new options that vary among my work VMs and my personal
+laptop, I've written a <a href="https://github.com/malloc47/config/blob/95eafec8373d9da302c5778964d4ce6e9c67ed22/modules/settings.nix">custom NixOS module</a>, which looks like</p>
+<pre><code class="nix">{config, pkgs, lib, ...}:
+
+with lib;
+
+{
+  options = {
+    settings = {
+      username = mkOption {
+        default = &quot;malloc47&quot;;
+        type = with types; uniq string;
+      };
+      email = mkOption {
+        default = &quot;malloc47@gmail.com&quot;;
+        type = with types; uniq string;
+      };
+      # more options
+    }
+  }
+}
+</code></pre>
+<p>This module lets me set a username for the machine being built, the
+keyboard layout I want to use, the email I want to use (for my git
+configuration), and many other options. I've written this module as a
+container of values for other modules to read, but takes no action
+itself (this is a trick so I can re-use the module for home-manger,
+discussed below).  However, upon importing this module elsewhere, I
+can set or retrieve values for these options to parameterize the rest
+of my configuration. E.g.,</p>
+<pre><code class="nix">users.users.${config.settings.username}.shell = pkgs.zsh;
+</code></pre>
+<p>NixOS helpfully keeps a <a href="https://nixos.org/nixos/manual/options.html">large index</a> of all options across all
+modules defined in the base NixOS system, which is also available in
+<code>man</code> page form on an installed system:</p>
+<pre><code class="bash">&gt; man configuration.nix
+</code></pre>
+<p>To utilize this declarative system configuration, NixOS provides the
+<code>nixos-rebuild</code> command which reads the <code>configuration.nix</code> file to
+find out what nixpkgs packages it requests, templates configuration
+files with the option values given, and eventually builds the entire
+file tree (as usual, symlinked back to the Nix store). NixOS persists
+every rebuild of your system as a sequentially numbered &quot;generation,&quot;
+which makes it easy to examine or roll back your entire system's
+configuration to a prior state. These generations are listed in the
+bootloader, so if you break something in your most recent generation,
+you can boot into a prior generation to find out what went wrong.</p>
+<h1 id="home-manager">home-manager</h1>
+<p>I've traditionally versioned my home folder's dotfiles in a git repo
+and deployed it with a <a href="/git-dotfile-versioning-across-systems">hand-rolled
+script</a>. Using a lightweight
+window manager (formerly XMonad) means that significant portions of my
+UI configuration live in my dotfiles, and this has led to increasingly
+awkward workarounds to make this configuration portable across the
+different hosts I regularly use. One example is controlling the Linux
+HiDPI settings which are, to put it mildly, <a href="https://wiki.archlinux.org/index.php/HiDPI">a mess</a>. I specify a
+slew of font tweaks, scaling factors, and DPI settings among half a
+dozen dotfiles. This makes it difficult to port my dotfiles from one
+machine to another.</p>
+<p>The formal Nix ecosystem doesn't (<a href="https://github.com/NixOS/nixpkgs/pull/9250">yet</a>) have a systematic
+approach for writing files directly to a home folder. It <em>can</em> place
+arbitrary files in an <code>/etc</code> folder. If you're the sole user of your
+machine and the application you want to configure looks at an <code>/etc</code>
+directory, you could have NixOS write your dotfiles there and forego
+keeping them in your home folder at all. My use case unfortunately
+doesn't fit neatly into these constraints; I have enough
+home-folder-only applications that an <code>/etc</code>-based approach isn't
+viable.</p>
+<p>The most Nix-native experience I've found for managing dotfiles is
+<a href="https://github.com/rycee/home-manager">home-manager</a>. It is not only written and managed via the Nix
+Expression Language, but it follows the same philosophy as the rest of
+NixOS. This includes a similar approach for splitting configuration
+into modules and, in fact, it supports importing my custom module
+mentioned above. Though home-manager can be run with a separate
+<code>home.nix</code> file and a <code>home-manager</code> CLI utility to trigger &quot;rebuilds&quot;
+of your home folder, it additionally exposes a <a href="https://github.com/rycee/home-manager/pull/97">NixOS module</a> that
+can be used in a system-level <code>configuration.nix</code> file to rebuild your
+home folder following a system-wide rebuild. Being the sole user of my
+systems, having NixOS and home-manager work in lockstep is preferable
+for me.</p>
+<p>home-manager encompasses more than just copying dotfiles to your home
+folder. Some broad use cases include:</p>
+<ul>
+<li>Installing packages locally for your user</li>
+<li>Placing dotfiles in your home folder</li>
+<li>Generating dotfiles from a declarative configuration</li>
+<li>Creating per-user systemd services (I use this for <code>emacs --daemon</code>,
+and it is quite handy).</li>
+</ul>
+<p>It does all this by building a single package, <code>home-manager-path</code>,
+that includes all the configured local packages and dotfiles. It then
+installs this package into your local Nix environment (traditionally
+managed by <code>nix-env</code>). Similar to how the rest of Nix works, each
+dotfile is symlinked into your home folder from the
+<code>home-manager-path</code> package contained in the Nix store. This works
+similarly to how my old, hacky script managed my dotfiles.</p>
+<p>The choice between having home-manager generate your dotfiles
+whole-cloth, or writing your dotfiles by hand is entirely up to
+you. If you're like me and have pre-written dotfiles sitting around,
+it's easy to re-use these by</p>
+<pre><code class="nix">home.file.&quot;.inputrc&quot;.source = ./.inputrc;
+</code></pre>
+<p>which insures that the <code>.inputrc</code> file in the same folder as the
+<code>home.nix</code> file is deployed to <code>~/.inputrc</code> in your home
+folder. home-manager supports more complex parameters--my emacs
+configuration has too many files to enumerate explicitly, and
+home-manager can symlink the entire directory to my home folder,
+creating nested directories as necessary:</p>
+<pre><code class="nix">home.file.&quot;.emacs.d&quot; = {
+  source = ./.emacs.d;
+  recursive = true;
+};
+</code></pre>
+<p>home-manager lets me specify file contents directly inside of
+<code>home.nix</code>, which is useful if I want to reference options defined in
+the aforementioned custom module:</p>
+<pre><code class="nix">home.file.&quot;fonts.el&quot; = {
+  target = &quot;.emacs.d/config/fonts.el&quot;;
+  text = ''
+    (provide 'fonts)
+    (set-frame-font &quot;${config.settings.fontName}-${toString config.settings.fontSize}&quot;)
+    (setq default-frame-alist '((font . &quot;${config.settings.fontName}-${toString config.settings.fontSize}&quot;)))
+  '';
+};
+</code></pre>
+<p>Since I've never had an extensive <code>.tmux.conf</code> file, I can use
+home-manger to generate it for me:</p>
+<pre><code class="nix">programs.tmux = {
+  enable = true;
+  terminal = &quot;tmux-256color&quot;;
+  shortcut = &quot;u&quot;;
+};
+</code></pre>
+<p>which creates a <code>~/.tmux.conf</code> file with (among other contents):</p>
+<pre><code>set  -g default-terminal &quot;tmux-256color&quot;
+
+# rebind main key: C-u
+unbind C-b
+set -g prefix C-u
+bind u send-prefix
+bind C-u last-window
+</code></pre>
+<p>The ability to have disparate applications with varied configuration
+languages wrapped by a single, type safe, functional meta-language is
+cool. If the idea of writing Nix code to generate your dotfiles is too
+weird, you can always fall back to having it symlink your hand-rolled
+dotfiles. If you prefer a hybrid, most home-manager modules have an
+<code>extra</code> option (or similar) to interleave arbitrary configuration in
+the dotfiles it generates.</p>
+<h1 id="layout">Layout</h1>
+<p>My newly restructured <a href="https://github.com/malloc47/config">config repo</a> is now laid out with the
+following directories:</p>
+<ul>
+<li><code>/nixos/configuration.nix</code> : general OS configuration that applies
+to all hosts
+<ul>
+<li>Imports <code>home.nix</code> to build my home folder</li>
+<li>Imports overlays from <code>pkgs/</code></li>
+</ul>
+</li>
+<li><code>hosts/</code> : host specific configuration:
+<ul>
+<li>Imports hardware configuration from <code>hardware/</code></li>
+<li>Imports general NixOS configuration from <code>nixos/</code></li>
+<li>Imports custom modules from <code>modules/</code></li>
+</ul>
+</li>
+<li><code>hardware/</code> : low-level configuration (file systems, kernel modules,
+etc.) for use by individual hosts</li>
+<li><code>config/home.nix</code> + dotfiles
+<ul>
+<li>Imports keyboard layout from <code>xkb/</code></li>
+<li>Imports custom modules from <code>modules/</code></li>
+</ul>
+</li>
+<li><code>modules/</code> : my custom configuration module, and any future modules</li>
+<li><code>personal/</code> : private git submodule for non-public dotfiles</li>
+<li><code>pkgs/</code> : overlays for custom packages</li>
+<li><code>xkb/</code> : keyboard layouts</li>
+</ul>
+<p>To bootstrap a new host after doing a vanilla install of NixOS, I need
+to:</p>
+<ol>
+<li>Generate the appropriate <code>hardware/</code> file (or re-use an existing
+one if the hardware matches).</li>
+<li>Customize a new <code>host/</code> file, including the options defined in
+<code>modules/settings.nix</code> to match the needs of the new machine
+(e.g. set a work email or change the default font size for HiDPI
+screens).</li>
+<li>Following this, I generally symlink the <code>host/&lt;hostname&gt;.nix</code> file
+to <code>/etc/nixos/configuration.nix</code> so that NixOS rebuilds don't have
+to be passed the file explicitly.</li>
+<li>Finally, running <code>nixos-rebuild</code> will construct the complete OS and
+my home folder with the exact set of packages and dotfiles I've
+defined for all of my machines.</li>
+</ol>
+<p>Alternatively, I could inject the configuration into the machine prior
+to doing a NixOS install or even build a custom NixOS ISO that
+includes my configuration in the image. Since bootstrapping my
+configuration is only something I've had to do once per platform, I
+haven't been compelled to optimize further yet.</p>
+<h1 id="conclusion">Conclusion</h1>
+<p>So far I've been happy with my NixOS setup; I do miss the ease of the
+<a href="https://aur.archlinux.org/">AUR</a> and the extensively documented <a href="https://wiki.archlinux.org/">ArchWiki</a>. Perhaps the
+most important change I've noticed is how much bolder I can be with
+toying on bare hardware; the few times I've messed up my system, I
+just boot back into the previous generation.</p>
+
+    </div>
+  </div>
+      <div class="share">
+      <a href="https://twitter.com/share" class="twitter-share-button" data-via="malloc47">Tweet</a>
+    </div>
+
+</div>
+
+      </div>
+            <footer>
+	<div class="icons">
+	  <a href="/rss.xml" class="transparent rss"></a>
+	</div>
+	<div class="footer-padding">This site is licensed under <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0</a>.</div>
+      </footer>
+
+      </div>
+  </body>
+</html>

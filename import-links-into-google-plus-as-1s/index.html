@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <!-- <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> -->
+    <title>malloc47/Import Links into Google Plus as +1s</title>
+    
+<meta name="keywords" content="">
+
+<meta property="og:url" content="https://www.malloc47.com/import-links-into-google-plus-as-1s/" />
+<meta property="og:title" content="Import Links into Google Plus as +1s" />
+<meta property="og:type" content="article" />
+
+    <meta name="viewport" content="width=720">
+    <link rel="preload" href="/font/Existence-Light-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Regular-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Italic-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Bold-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Inconsolata-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/assets/style.css">
+    <link id="day-css" rel="stylesheet" href="/assets/night.css" disabled>
+    <link id="night-css" rel="stylesheet" href="/assets/day.css" disabled>
+    <script src="/assets/main.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <div class="icons-left">
+      <canvas id="miniclock" width="50" height="50" class="selectable"></canvas>
+      <span id="toggle" class="transparent-light toggle selectable"></span>
+    </div>
+        <div class="icons">
+      <a href="mailto:malloc47@gmail.com" class="transparent gmail"></a>
+      <a href="https://www.github.com/malloc47" class="transparent github"></a>
+    </div>
+
+    <div id="container">
+            <header id="main-header">
+	<p>malloc(<span class="header-number"><a href="/">47</a></span>)</p>
+	<p class="header-name">&mdash;<a href="https://www.twitter.com/malloc47">Jarrell Waggoner</a>&mdash;</p>
+      </header>
+
+            <nav>
+      	<ul>
+      	  <li><a href="/" title="Home">Home</a></li>
+      	  <li><a href="/about" title="About">About</a></li>
+      	  <li><a href="/music" title="Music">Music</a></li>
+      	  <li><a href="/research" title="Research">Research</a></li>
+      	  <li><a href="/talks" title="Talks">Talks</a></li>
+      	  <li><a href="mailto:malloc47@gmail.com" title="Email">Contact</a></li>
+      	</ul>
+      </nav>
+
+      <div id="contents" role="main">
+        
+<div class="content">
+  <div class="content-wrap">
+    <p class="date">2012 <span class="date-dark">00</span>02 <span class="date-dark">00</span>18 </p>
+        <p class="social">
+      <a href="https://www.facebook.com/sharer.php?u=https%3A%2F%2Fwww.malloc47.com%2Fimport-links-into-google-plus-as-1s%2F&amp;t=Import+Links+into+Google+Plus+as+%2B1s"
+	 target="_blank"
+	 rel="nofollow"
+	 title="Share on Facebook">F</a>
+
+      <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.malloc47.com%2Fimport-links-into-google-plus-as-1s%2F&amp;text=Import+Links+into+Google+Plus+as+%2B1s&amp;via=malloc47&amp;related=malloc47"
+	 target="_blank"
+	 title="Tweet"
+	 rel="nofollow">T</a>
+    </p>
+
+    <header>Import Links into Google Plus as +1s</header>
+    <div class="content-body">
+      <p>I've been accumulating helpful and interesting articles for a number
+of years now. At first, they existed solely as starred articles in
+Google Reader. Eventually, I migrated to
+<a href="https://delicious.com/">Delicious</a>, and finally to
+<a href="https://www.diigo.com">diigo</a>. While diigo has served me well, I
+finally decided to consolidate services and begin using Google's +1
+feature, as it is fairly ubiquitous and is associated with an account
+I am already logged into (and appears nicely on my Google+ profile).</p>
+<p>While Google's Takeout is very useful on the exporting front (a factor
+I consciously consider before migrating to any system), I've never run
+across a good way to import a list of links as +1s on my Google+
+profile. So here's what I came up with last night:</p>
+<pre><code class="bash">#!/bin/sh
+echo &quot;&lt;html&gt;&lt;head&gt;&quot; &gt; page.html
+echo &quot;&lt;script type=\&quot;text/javascript\&quot; src=\&quot;https://apis.google.com/js/plusone.js\&quot;&gt;&lt;/script&gt;&quot; &gt;&gt; page.html
+echo &quot;&lt;/head&gt;&lt;body&gt;&quot; &gt;&gt; page.html
+grep -o http[^\&quot;\)\']* $1 | xargs -I{} echo &quot;&lt;g:plusone href=\&quot;{}\&quot;&gt;&lt;/g:plusone&gt;&quot; &gt;&gt; page.html
+echo &quot;&lt;/body&gt;&lt;/html&gt;&quot; &gt;&gt; page.html
+</code></pre>
+<p>Since diigo will happily let you export in a variety of formats, I
+chose the csv file. My goal was simply to create a webpage with the
+links and the +1 button next to each. The process of clicking the
+buttons themselves could be automated, but I decided to manually click
+on the buttons, since I wanted to vet the links I transferred. The
+very simple (read: not iron-clad) regex (<code>http[^\&quot;\)\']*</code>) is used to
+pull out the links. It looks for an instance of a string &quot;http&quot; and
+then continues grabbing characters until it hits a quote. It should
+work in a number of contexts, aside from just CSV files. <code>xargs</code>
+kindly loops over all of these addresses and outputs each in HTML
+form. The rest of the script just adds the usual HTML boilerplate, as
+well as the +1 script necessary for the buttons to work.</p>
+<p>One more wrinkle: the latest crop of browsers sandbox what javascript
+is allowed to do to the local filesystem (and rightfully so), so you
+will need to upload the generated page to a non-local path (or simply
+copy and paste it into a website that will let you edit html
+live). Once you do, just click on all the +1 buttons everywhere, and
+your links will be +1'd accordingly.</p>
+<p>Have a <a href="https://plus.google.com/u/0/113712188424853568731/plusones">look</a>.</p>
+
+    </div>
+  </div>
+      <div class="share">
+      <a href="https://twitter.com/share" class="twitter-share-button" data-via="malloc47">Tweet</a>
+    </div>
+
+</div>
+
+      </div>
+            <footer>
+	<div class="icons">
+	  <a href="/rss.xml" class="transparent rss"></a>
+	</div>
+	<div class="footer-padding">This site is licensed under <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0</a>.</div>
+      </footer>
+
+      </div>
+  </body>
+</html>

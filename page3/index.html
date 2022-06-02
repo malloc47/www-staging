@@ -1,0 +1,789 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <!-- <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> -->
+    <title>malloc47/page3/</title>
+    
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="author" content="Jarrell Waggoner">
+    <meta property="og:url" content="https://www.malloc47.com/page3/" />
+    <meta property="og:title" content="malloc47" />
+    <meta property="og:type" content="article" />
+    
+    <meta name="viewport" content="width=720">
+    <link rel="preload" href="/font/Existence-Light-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Regular-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Italic-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Gudea-Bold-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/font/Inconsolata-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/assets/style.css">
+    <link id="day-css" rel="stylesheet" href="/assets/night.css" disabled>
+    <link id="night-css" rel="stylesheet" href="/assets/day.css" disabled>
+    <script src="/assets/main.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <div class="icons-left">
+      <canvas id="miniclock" width="50" height="50" class="selectable"></canvas>
+      <span id="toggle" class="transparent-light toggle selectable"></span>
+    </div>
+        <div class="icons">
+      <a href="mailto:malloc47@gmail.com" class="transparent gmail"></a>
+      <a href="https://www.github.com/malloc47" class="transparent github"></a>
+    </div>
+
+    <div id="container">
+            <header id="main-header">
+	<p>malloc(<span class="header-number"><a href="/">47</a></span>)</p>
+	<p class="header-name">&mdash;<a href="https://www.twitter.com/malloc47">Jarrell Waggoner</a>&mdash;</p>
+      </header>
+
+            <nav>
+      	<ul>
+      	  <li><a href="/" title="Home">Home</a></li>
+      	  <li><a href="/about" title="About">About</a></li>
+      	  <li><a href="/music" title="Music">Music</a></li>
+      	  <li><a href="/research" title="Research">Research</a></li>
+      	  <li><a href="/talks" title="Talks">Talks</a></li>
+      	  <li><a href="mailto:malloc47@gmail.com" title="Email">Contact</a></li>
+      	</ul>
+      </nav>
+
+      <div id="contents" role="main">
+        
+
+<div class="content">
+  <div class="content-wrap">
+    <p class="date">2012 <span class="date-dark">00</span>11 <span class="date-dark">00</span>24 </p>
+        <p class="social">
+      <a href="https://www.facebook.com/sharer.php?u=https%3A%2F%2Fwww.malloc47.com%2Fpage3%2F&amp;t=page3%2F"
+	 target="_blank"
+	 rel="nofollow"
+	 title="Share on Facebook">F</a>
+      <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.malloc47.com%2Fpage3%2F&amp;text=page3%2F&amp;via=malloc47&amp;related=malloc47"
+	 target="_blank"
+	 title="Tweet"
+	 rel="nofollow">T</a>
+    </p>
+
+    <header><a href="/pythonbrew-opencv-debian/">pythonbrew+opencv+debian</a></header>
+    <div class="content-body">
+      <p>There are a number of ways to go about building a modern development
+environment for scientific computing and computer vision in python.
+If you're used to developing on bleeding-edge, however, the latest
+debian stable makes it a chore to get started with the latest and
+greatest.  It ships with <code>python2.6</code> instead of 2.7, and <a href="https://opencv.org/">opencv</a>
+is notoriously out of date in a number of distributions, debian
+included.  I typically use Arch, but the server-class machines I have
+access to were running debian, so I had to bootstrap my setup into
+this environment.</p>
+<p>Challenge accepted.</p>
+<p>Thankfully, <a href="https://github.com/utahta/pythonbrew">pythonbrew</a> (or <a href="https://github.com/saghul/pythonz">pythonz</a>) comes to the rescue by
+making it easy to handle multiple pythons for a single account
+(without having to install them system-wide) as well as providing
+wrappers around <a href="https://virtualenv.pypa.io/en/latest/">virtualenv</a>.  However, not everything is rosy.
+The python you choose has to be built with shared libraries if you
+want to install opencv later:</p>
+<pre><code class="bash">pythonbrew install --configure=&quot;--enable-shared&quot; 2.7.3
+</code></pre>
+<p>After this, you can bootstrap a <code>virtualenv</code> as usual</p>
+<pre><code class="bash">pythonbrew venv init
+pythonbrew venv create debian
+pythonbrew venv use debian
+</code></pre>
+<p>and install any requisite stuff you might need (minimum numpy/scipy)</p>
+<pre><code class="bash">pip install numpy
+pip install scipy
+pip install pymorph
+pip install matplotlib
+pip install distutils
+</code></pre>
+<p>Unfortunately, there's no such <code>pip</code> package for opencv.  Thankfully,
+the <a href="http://opencv.willowgarage.com/wiki/InstallGuide%20%3A%20Debian">debian installation guide</a> isn't too far out of date, and many
+of the listed packages to <code>apt-get</code> are still relevant.</p>
+<pre><code class="bash">wget http://downloads.sourceforge.net/project/opencvlibrary/opencv-unix/2.4.3/OpenCV-2.4.3.tar.bz2
+tar xjvf OpenCV-2.4.3.tar.bz2
+cd OpenCV-2.4.3
+mkdir {build,release}
+cd release
+</code></pre>
+<p>At this point, we need to delve into where <code>pythonbrew</code> puts all its
+related files to configure opencv correctly.  First, your installed
+python will be available in one of two places (here python 2.7.3 is
+used as an example):</p>
+<pre><code>~/.pythonbrew/venvs/Python-2.7.3/{venv-name}/bin/python
+~/.pythonbrew/pythons/Python-2.7.3/bin/python
+</code></pre>
+<p>All <code>virtualenv</code>s based on a particular version of python will have a
+copy of that python binary for use in their own isolated environment.
+In addition, the <code>virtualenv</code> has an <code>include</code> directory that you
+should use, since all your additional packages installed into the
+<code>virtualenv</code> will place their headers in this directory:</p>
+<pre><code>~/.pythonbrew/venvs/Python-2.7.3/{venv-name}/include/python2.7
+</code></pre>
+<p>The hitch, however, is that the <code>virtualenv</code> does not have a
+copy/symlink of the shared library we specifically built when first
+compiling python using <code>pythonbrew</code>, unlike a typical native python
+install.  This means that <code>cmake</code>'s approach to locate this library
+will fail.  Thus we must point opencv to this</p>
+<pre><code>~/.pythonbrew/pythons/Python-2.7.3/lib/libpython2.7.so
+</code></pre>
+<p>for it to build corectly.</p>
+<p>Speaking of <code>cmake</code>, there is a bug in the <code>cmake</code> included in debian
+that prevents it from building opencv correctly.  I was lazy and
+simply grabbed a binary of the latest <code>cmake</code>,</p>
+<pre><code class="bash">wget http://www.cmake.org/files/v2.8/cmake-2.8.9-Linux-i386.tar.gz
+</code></pre>
+<p>which worked on my debian build, but it's better to compile it if you
+plan to continue using it for more than a one-off build.</p>
+<p>Finally, understanding opencv's <code>cmake</code> flags is important for getting
+everything stitched together:</p>
+<pre><code>PYTHON_EXECUTABLE=~/.pythonbrew/venvs/Python-2.7.3/{venv-name}/bin/python
+PYTHON_INCLUDE_DIR=~/.pythonbrew/venvs/Python-2.7.3/debian/include/python2.7
+PYTHON_LIBRARY=~/.pythonbrew/pythons/Python-2.7.3/lib/libpython2.7.so
+</code></pre>
+<p>Additionally, if you find that numpy isn't autodetected, you can specify</p>
+<pre><code>PYTHON_NUMPY_INCLUDE_DIR=~/.pythonbrew/venvs/Python-2.7.3/debian/lib/python2.7/site-packages/numpy/core/include
+</code></pre>
+<p>You can also specify your <code>virtualenv</code> path to install the python libraries</p>
+<pre><code>PYTHON_PACKAGES_PATH=~/.pythonbrew/venvs/Python-2.7.3/{venv-name}/lib/python2.7/site-packages
+</code></pre>
+<p>or just symlink/copy the resulting <code>cv2.so</code> and <code>cv.py</code> files there later.</p>
+<p>Putting it all together, I used this command to generate the makefile
+which compiles correctly against <code>pythonbrew</code>'s python (where <code>debian</code>
+is my <code>virtualenv</code> name):</p>
+<pre><code class="bash">~/cmake-2.8.9-Linux-i386/bin/cmake \
+-D CMAKE_INSTALL_PREFIX=../build \
+-D BUILD_NEW_PYTHON_SUPPORT=ON \
+-D BUILD_PYTHON_SUPPORT=ON \
+-D BUILD_EXAMPLES=OFF \
+-D PYTHON_EXECUTABLE=~/.pythonbrew/venvs/Python-2.7.3/debian/bin/python \
+-D PYTHON_INCLUDE_DIR=~/.pythonbrew/venvs/Python-2.7.3/debian/include/python2.7 \
+-D PYTHON_LIBRARY=~/.pythonbrew/pythons/Python-2.7.3/lib/libpython2.7.so \
+-D PYTHON_NUMPY_INCLUDE_DIR=~/.pythonbrew/venvs/Python-2.7.3/debian/lib/python2.7/site-packages/numpy/core/include \
+-D PYTHON_PACKAGES_PATH=~/.pythonbrew/venvs/Python-2.7.3/debian/lib/python2.7/site-packages \
+../
+make
+make install
+</code></pre>
+<p>Depending on what you're doing, there may be other tricks with
+<code>LD_LIBRARY_PATH</code> to make specific things work, but your
+<code>pythonbrew</code>ed python should be primed to access opencv from here.</p>
+
+    </div>
+  </div>
+</div>
+
+<div class="content">
+  <div class="content-wrap">
+    <p class="date">2012 <span class="date-dark">00</span>09 <span class="date-dark">00</span>15 </p>
+        <p class="social">
+      <a href="https://www.facebook.com/sharer.php?u=https%3A%2F%2Fwww.malloc47.com%2Fpage3%2F&amp;t=page3%2F"
+	 target="_blank"
+	 rel="nofollow"
+	 title="Share on Facebook">F</a>
+      <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.malloc47.com%2Fpage3%2F&amp;text=page3%2F&amp;via=malloc47&amp;related=malloc47"
+	 target="_blank"
+	 title="Tweet"
+	 rel="nofollow">T</a>
+    </p>
+
+    <header><a href="/anatomy-of-a-chrome-extension/">Anatomy of a Chrome Extension</a></header>
+    <div class="content-body">
+      <p>I launched <a href="http://nonpartisan.me">nonpartisan.me</a> a few weeks back, which exists
+primarily in the form of a Google Chrome extension (there's a Firefox
+add-on too).  Since I released it with all of the <a href="https://github.com/malloc47/nonpartisan.me">source</a>, this
+makes it a great time to dissect the (very simple) code.  As you will
+notice from the site and the small bit of <a href="https://charlestoncitypaper.com/sick-of-politics-on-facebook-try-this-browser-tool/">press</a> it picked up,
+<code>nonpartisan.me</code> has a very simple premise: filter out political
+keywords from the various newsfeeds (specifically Facebook, Twitter,
+and Google+).</p>
+<p>This was my first attempt at a Chrome extension, and it's surprisingly
+straightforward.  All such extensions require a <code>manifest.json</code>, which
+looks like this for <code>nonpartisan.me</code>:</p>
+<pre><code class="javascript">{
+    &quot;name&quot;             : &quot;nonpartisan.me&quot;,
+    &quot;version&quot;          : &quot;0.2.1&quot;,
+    &quot;manifest_version&quot; : 2,
+    &quot;description&quot;      : &quot;Removes partisanship from your news feeds&quot;,
+    &quot;icons&quot;            : { &quot;16&quot;: &quot;icon16.png&quot;,
+                           &quot;48&quot;: &quot;icon48.png&quot;,
+                          &quot;128&quot;: &quot;icon128.png&quot; },
+    &quot;homepage_url&quot;     : &quot;https://nonpartisan.me&quot;,
+    &quot;page_action&quot;      : {&quot;default_icon&quot; : &quot;icon48.png&quot;,
+                          &quot;default_title&quot;: &quot;nonpartisan'ed&quot; },
+    &quot;permissions&quot;      : [&quot;tabs&quot;,
+                          &quot;https://www.facebook.com/&quot;,
+                          &quot;https://www.twitter.com/&quot;,
+                          &quot;https://plus.google.com/&quot;],
+    &quot;options_page&quot;     : &quot;options.html&quot;,
+    &quot;content_scripts&quot;  : [
+    {
+        &quot;matches&quot;: [&quot;*://*.facebook.com/*&quot;],
+        &quot;js&quot;     : [&quot;jquery.js&quot;,&quot;common.js&quot;,&quot;fb.js&quot;,&quot;nonpartisan.js&quot;],
+        &quot;run_at&quot; : &quot;document_end&quot;
+    },
+    {
+        &quot;matches&quot;: [&quot;*://twitter.com/*&quot;],
+        &quot;js&quot;     : [&quot;jquery.js&quot;,&quot;common.js&quot;,&quot;tw.js&quot;,&quot;nonpartisan.js&quot;],
+        &quot;run_at&quot; : &quot;document_end&quot;
+    },
+    {
+        &quot;matches&quot;: [&quot;*://plus.google.com/*&quot;],
+        &quot;js&quot;     : [&quot;jquery.js&quot;,&quot;common.js&quot;,&quot;gp.js&quot;,&quot;nonpartisan.js&quot;],
+        &quot;run_at&quot; : &quot;document_end&quot;
+    }],
+    &quot;background&quot;: {&quot;scripts&quot;   : [&quot;common.js&quot;,&quot;background.js&quot;],
+                   &quot;persistent&quot;: false }
+}
+</code></pre>
+<p>The real meat here is <code>content_scripts</code>, which lists the javascript we
+wish to trigger after a page is loaded, <code>greasemonkey</code>-style.  A
+particularly nice feature of content scripts are that they work in an
+isolated environment separate from any javascript that the page itself
+may include.  Thus we can add <code>jquery</code> to the list of javascript that
+is run without fear of clashing with a page's global namespace.</p>
+<p>You can think of every element in the <code>&quot;js&quot;</code> array as a separate
+<code>&lt;script&gt;</code> tag in an <code>HTML</code> page, so the files are loaded in the given
+order, all into a single namespace.  Rather clumsily, I chose to
+simply put a callback module (which is called <code>plugin</code> here) in the
+individual <code>fb.js</code>, <code>tw.js</code>, and <code>gp.js</code> files which is then used by
+the core component, <code>nonpartisan.js</code>, as a simple means of avoiding
+any hard-coded per-site values in the actual filtering code.</p>
+<p>With this, and the pseudo-regex <code>&quot;matches&quot;</code> field that specifies which
+pages trigger the content script, we can run arbitrary code on
+websites we specify.  For <code>nonpartisan.me</code>, the filtering code looks
+like this:</p>
+<pre><code class="javascript">&quot;use strict&quot;;
+var nonpartisan = function(plugin) {
+
+    function nonpartisan (watch,parent,keywords) {
+        function kill (parent,removeList){
+            $(parent).each(function () {
+                var el = $(this);
+                if(el.css('display') !== 'none') {
+                    el.find('*').each(function () {
+                        var toCheck = $(this).text().toLowerCase();
+                        if(toCheck.length &gt; 0 &amp;&amp;
+                           (removeList.some(function (value) {
+                               return (toCheck.search(&quot;\\b&quot;+value.toLowerCase()+&quot;\\b&quot;) &gt;=0);
+                           }))
+                          ) {
+                            el.css({'display':'none'});
+                            return false;
+                        }
+                    });
+                }
+            });
+        }
+
+        if($(parent) &amp;&amp; $(watch)) {
+            var numChildren = $(parent).children().length;
+            setInterval(function () {
+                var newNumChildren = $(parent).children().length;
+                if(numChildren !== newNumChildren) {
+                    kill(parent,keywords);
+                    numChildren = newNumChildren;
+                }
+            },
+                        500);
+            kill(parent,keywords);
+        }
+    }
+
+    // get parameters from plugin and trigger nonpartisan() here...
+
+}(plugin);
+</code></pre>
+<p>The first chunk--the <code>kill</code> function--works as advertised: given a
+parent element and a set of keywords, the function iterates over every
+child element and determines if any of the nested elements within
+(i.e. <code>el.find('*')</code>) contains any of the keywords.  Instead of
+deleting <code>DOM</code> nodes, which may break the page's own javascript (I
+discovered this the hard way), it's easier to instead call
+<code>el.css({'display':'none});</code> to simply hide unwanted elements.  For
+efficiency, the <code>forEach</code> terminates as soon any any nested child
+returns a match, potentially saving a small amount of needless
+searching.</p>
+<p>The second chunk starts a timer (if indeed the parent is even found on
+the current page) that checks if the number of children of the parent
+element has changed and, if so, re-triggers the filtering process to
+determine if there are any new children to be hidden.  This helps
+handle <code>AJAX</code>-driven sites, like the &quot;infinite scrolling&quot; facebook
+newsfeed, which may mutate the <code>DOM</code> at any time.  Both of these
+functions are wrapped up into another easy-to-call function inside of
+the high-level <code>nonpartisan</code> module.</p>
+<p>And that really is all there is to a typical <code>greasemonkey</code>-like
+Chrome extension, but that's certainly not the end of what a complete
+and helpful extension can provide.  The trickier bit is persisting
+configuration options.  The downside of sandboxing content scripts is
+that they exist in a transient execution context, meaning there's no
+<code>localStorage</code> to persist program options.  The details of the
+plumbing used to kick-off the process and handle options were omitted
+from the above snippet, so we'll dig more into this now to illustrate
+how to handle persistent options.</p>
+<p>Chrome provides a nice solution to the problem of not having
+<code>localStorage</code> available to content scripts by providing a
+<code>background</code> script which <em>does</em> have its own <code>localStorage</code>, which it
+can transmit to a content script via the <code>chrome.extension.onMessage</code>
+listener.  We can then fill in the omitted component of the above
+snippet with:</p>
+<pre><code class="javascript">chrome.extension.sendMessage({method: &quot;config&quot;}, function (response) {
+    if(!response.sites[plugin.site]) return;
+    var l = response.filter;
+    if(l &amp;&amp; l.length&gt;0) {
+        plugin.cb(l,nonpartisan);
+    }
+    // get default values from common.js
+    else {
+        l = [];
+        for(var index in choices) {
+            l = l.concat(choices[index]);
+        }
+        plugin.cb(l,nonpartisan);
+    }
+});
+</code></pre>
+<p>This sends a message, requesting <code>&quot;config&quot;</code> from the <code>background.js</code>
+script, which returns, among other things, the list of keywords we
+wish to filter.  This list was saved in <code>localStorage</code> in
+<code>background.js</code>'s execution context.  Recall that <code>plugin</code> is the
+module that specifies the particular settings for the page being
+filtered.  Thus we pass along the list of words to filter and the
+<code>nonpartisan()</code> callback function to the <code>plugin</code> module, and it
+subsequently executes <code>nonpartisan()</code> on the appropriate elements on
+the <code>DOM</code>.  The <code>background.js</code> file used in <code>nonpartisan.me</code> is a bit
+more <a href="https://github.com/malloc47/nonpartisan.me/blob/master/chrome/background.js">involved</a>, but it nonetheless essentially acts as a broker,
+converting Chrome's internal message-passing API calls to
+<code>localStorage</code> requests.</p>
+<p>Of course, there's only so much utility to be gained from
+<code>localStorage</code> without supplying the user with the ability to
+configure the various options that may be saved in therein.  This is
+done by a typical <code>html</code> page, specified by <code>&quot;options_page&quot;</code>.  Since
+there's not much magic there--it's just a plain html page with enough
+javascript to persist the settings--I will omit the gory details,
+which you can poke around yourself in <a href="https://github.com/malloc47/nonpartisan.me/blob/master/chrome/options.js">the</a> <a href="https://github.com/malloc47/nonpartisan.me/blob/master/chrome/background.js">repository</a>, if
+you're so inclined.</p>
+<p>So that's an extension.  Writing the above was literally a matter of
+minutes and some quality time with the Chrome API specifications.  As
+is always the case (especially when I'm working outside of my area of
+expertise, say with making the amateurish logo), the real work is
+doing the little bits of spit-and-polish to handle the various
+configuration options, throwing together the webpage, creating the
+icons and promotional images for the <a href="https://chrome.google.com/webstore/detail/ninebcppidndhampaggnjbijpacoadgg">Chrome Web Store</a>, etc.  But
+it's still good to know that the Chrome team has made the
+extension-building process as simple and well <a href="https://developer.chrome.com/extensions/docs.html">documented</a> as they
+have.</p>
+
+    </div>
+  </div>
+</div>
+
+<div class="content">
+  <div class="content-wrap">
+    <p class="date">2012 <span class="date-dark">00</span>08 <span class="date-dark">00</span>11 </p>
+        <p class="social">
+      <a href="https://www.facebook.com/sharer.php?u=https%3A%2F%2Fwww.malloc47.com%2Fpage3%2F&amp;t=page3%2F"
+	 target="_blank"
+	 rel="nofollow"
+	 title="Share on Facebook">F</a>
+      <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.malloc47.com%2Fpage3%2F&amp;text=page3%2F&amp;via=malloc47&amp;related=malloc47"
+	 target="_blank"
+	 title="Tweet"
+	 rel="nofollow">T</a>
+    </p>
+
+    <header><a href="/poor-mans-ldap/">Poor Man&#39;s LDAP</a></header>
+    <div class="content-body">
+      <p>In addition to being a researcher and backend web developer, I've also
+worn the system administrator hat for a number of years.  While the
+likes of <a href="https://en.wikipedia.org/wiki/Ldap"><code>LDAP</code></a>, <a href="https://en.wikipedia.org/wiki/Active_directory"><code>Active Directory</code></a>, <a href="https://en.wikipedia.org/wiki/Network_Information_Service"><code>NIS</code></a>, and their
+ilk can work quite well for managing medium-to-large networks, I've
+more often been tasked with managing small-scale (&lt; 20 machines)
+heterogeneous Linux networks, where deploying <code>LDAP</code> with full
+<code>Kerberos</code> authentication would be overkill.  Typical requirements
+I've encountered in small lab settings are simple user account and
+home folder sharing, and (relatively) similar package installations.</p>
+<p>With this in mind, I did what probably every sysadmin in the same
+situation would do: scrape together a simple set of scripts to handle
+basic file synchronization for me.  Specifically, I noticed two
+prevalent requirements among config files being synced:</p>
+<ul>
+<li>
+<p>machines and/or distros have a common header or footer that must be
+included (e.g., a list of system users in <code>/etc/passwd</code>), and</p>
+</li>
+<li>
+<p>specific machines (e.g., servers) shouldn't have some files synced
+with the rest of the machines (e.g., file shares might be different
+on a server).</p>
+</li>
+</ul>
+<p>Thus, <a href="https://github.com/malloc47/pmldap"><code>Poor Man's LDAP</code></a> was born.</p>
+<p>While nothing more than a collection of scripts--no different than
+what many other sysadmins have implemented, in all likelihood--they
+will hopefully be of use for those who, like me, are graduate students
+or otherwise non-full-time sysadmins that don't have time to do things
+the &quot;right&quot; way.</p>
+<p>I'm dogfooding <code>pmldap</code> on my research lab's network, where we
+(currently) have 5 Fedora machines (various versions between 10 and
+16) and 5 Debian machines (all on stable).  Since my recent
+<a href="https://github.com/malloc47/pmldap/commit/ab8918c17f22d2a9dabd6ea9ca97b39c9cdc968a">patch</a>, <code>pmldap</code> now supports groups, which are useful for running
+<code>yum</code> commands only on the Fedora machines and <code>apt</code> commands on only
+the Debian boxes.  Files being synchronized include: <code>fstab</code>, <code>group</code>,
+<code>hosts</code>, <code>hosts.allow</code>, <code>hosts.deny</code>, <code>passwd</code>, <code>shadow</code>, and
+<code>sudoers</code>.</p>
+<p>Also in the repo are a few convenience tools that I've found useful:</p>
+<ul>
+<li>
+<p><code>authorize-machine</code> bootstraps a machine by setting up ssh keys</p>
+</li>
+<li>
+<p><code>setup</code> bootstraps config files from a remote machine so they can be
+merged with the desired additions</p>
+</li>
+<li>
+<p><code>cmd</code> runs an arbitrary command on all machines (or a particular
+group of machines)</p>
+</li>
+<li>
+<p><code>useradd</code> is a feature-incomplete reimplementation of the native
+<code>useradd</code> command that works on local <code>passwd</code>, <code>shadow</code>, and
+<code>group</code> files to add new users that can later be synchronized across
+the network</p>
+</li>
+</ul>
+<p>Since I hadn't stumbled across something of this scope to fit the
+small-scale-network use case, I'm hopeful that <code>pmldap</code> will be of use
+to anyone in a similar situation.</p>
+<p>You'll find it on gitub <a href="https://github.com/malloc47/pmldap">here</a>.</p>
+
+    </div>
+  </div>
+</div>
+
+<div class="content">
+  <div class="content-wrap">
+    <p class="date">2012 <span class="date-dark">00</span>07 <span class="date-dark">00</span>29 </p>
+        <p class="social">
+      <a href="https://www.facebook.com/sharer.php?u=https%3A%2F%2Fwww.malloc47.com%2Fpage3%2F&amp;t=page3%2F"
+	 target="_blank"
+	 rel="nofollow"
+	 title="Share on Facebook">F</a>
+      <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.malloc47.com%2Fpage3%2F&amp;text=page3%2F&amp;via=malloc47&amp;related=malloc47"
+	 target="_blank"
+	 title="Tweet"
+	 rel="nofollow">T</a>
+    </p>
+
+    <header><a href="/git-dotfile-versioning-across-systems/">Git Dotfile Versioning Across Systems</a></header>
+    <div class="content-body">
+      <p>For users of unix-like operating systems, treating your dotfiles like
+real code and keeping them in a repository is a supremely good idea.
+While there are a myriad of ways to go about this, the typical (albeit
+destructive) way to do this is by symlinking files in the repository
+to the home folder:</p>
+<pre><code class="bash">#!/bin/bash
+DEST=$HOME
+FILES=$(git ls-files | grep -v .gitignore | grep -v ^$(basename $0)$)
+for f in $FILES ; do
+    [ -n &quot;$(dirname $f)&quot; \
+      -a &quot;$(dirname $f)&quot; != &quot;.&quot; \
+      -a ! -d &quot;$DEST/$(dirname $f)&quot; ] \
+    &amp;&amp; mkdir -p $DEST/$(dirname $f)
+    ln -sf $(pwd)/$f $DEST/$f
+done
+</code></pre>
+<p>I specifically chose to have <code>FILES</code> populated using <code>git ls-files</code> to
+prevent any unversioned files from sneaking into the home folder,
+additionally filtering out both the <code>.gitignore</code> file, and the current
+script name (so it can be safely checked in as well).  After this, we
+loop over the files, creating appropriate directories if they do not
+exist, effectively symlinking the <em>entire repo</em> to the home folder,
+clobbering any files that are already there (without asking!).</p>
+<p>While most dotfiles won't care what system they are on, certain
+scripts or settings may be machine-dependent.  To accommodate this, I
+include a <code>~/.sys/`hostname`/</code> folder for every machine with
+system-specific files.  Then, when symlinking, we favor files listed
+in the <code>~/.sys/`hostname`/</code> folder rather than the top-level files:</p>
+<pre><code class="bash">if [ -e &quot;.sys/$(hostname)/$f&quot; ] ; then
+    ln -sf $(pwd)/.sys/$(hostname)/$f $DEST/$f
+else
+    ln -sf $(pwd)/$f $DEST/$f
+fi
+</code></pre>
+<p>Thus, for example, given <code>machine1</code> and <code>machine2</code> and a repo in the
+<code>~/dotfiles</code> directory with these files:</p>
+<pre><code>~/dotfiles/.gitconfig
+~/dotfiles/.sys/machine2/.gitconfig
+</code></pre>
+<p><code>machine1</code> will get a symlink from</p>
+<pre><code>~/dotfiles/.gitconfig
+</code></pre>
+<p>to <code>~/.gitconfig</code>, while <code>machine2</code> will instead get a symlink from</p>
+<pre><code>~/dotfiles/.sys/machine2/.gitconfig
+</code></pre>
+<p>to <code>~/.gitconfig</code>.  This variant of the script doesn't explicitly
+ignore the <code>.sys</code> folder itself so it will be added to the home folder
+as well.  Which, as an aside, can be useful by including something
+like this</p>
+<pre><code class="bash">[ -d ~/.sys/`hostname`/bin ] &amp;&amp; export PATH=~/.sys/`hostname`/bin:$PATH
+</code></pre>
+<p>in the <code>.bashrc</code> file such that specific scripts will be on the <code>PATH</code>
+for individual machines.</p>
+<p>So the final script, with a bit of input checking, looks like this:</p>
+<pre><code class="bash">#!/bin/bash
+set -e
+EXPECTED_ARGS=1
+if [ $# -lt $EXPECTED_ARGS ]
+then
+    echo &quot;Usage: `basename $0` directory&quot;
+    echo &quot;WILL clobber existing files without permission: Use at your own risk&quot;
+    exit 65
+fi
+
+DEST=$1
+FILES=$(git ls-files | grep -v .gitignore | grep -v ^$(basename $0)$)
+
+for f in $FILES ; do
+    echo $f
+    if [ -n &quot;$(dirname $f)&quot; -a &quot;$(dirname $f)&quot; != &quot;.&quot; -a ! -d &quot;$DEST/$(dirname $f)&quot; ] ; then
+        mkdir -p $DEST/$(dirname $f)
+    fi
+
+    if [ -e &quot;.sys/$(hostname)/$f&quot; ] ; then
+        ln -sf $(pwd)/.sys/$(hostname)/$f $DEST/$f
+    else
+        ln -sf $(pwd)/$f $DEST/$f
+    fi
+done
+</code></pre>
+<p>By making <code>DEST</code> a command-line parameter, a dry-run can be done by
+simply giving it an empty folder.  There's no issue doing this inside
+the repo's working tree, as only checked-in files will be transferred
+to the target directory:</p>
+<pre><code>&gt; mkdir tmp
+&gt; ./deploy tmp/
+</code></pre>
+<p>Doing this, the contents of the <code>tmp/</code> directory can be verified with
+<code>ls -al</code> to see exactly what the script will do to your home folder.
+Once satisfied, it can be run again with</p>
+<pre><code>&gt; ./deploy ~
+</code></pre>
+<p>to symlink all the files to the home folder proper.</p>
+<p>Feel free to grab an up-to-date version of this script from my own
+dotfile repo <a href="https://github.com/malloc47/config/blob/master/deploy">here</a>.</p>
+
+    </div>
+  </div>
+</div>
+
+<div class="content">
+  <div class="content-wrap">
+    <p class="date">2012 <span class="date-dark">00</span>07 <span class="date-dark">00</span>08 </p>
+        <p class="social">
+      <a href="https://www.facebook.com/sharer.php?u=https%3A%2F%2Fwww.malloc47.com%2Fpage3%2F&amp;t=page3%2F"
+	 target="_blank"
+	 rel="nofollow"
+	 title="Share on Facebook">F</a>
+      <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.malloc47.com%2Fpage3%2F&amp;text=page3%2F&amp;via=malloc47&amp;related=malloc47"
+	 target="_blank"
+	 title="Tweet"
+	 rel="nofollow">T</a>
+    </p>
+
+    <header><a href="/beating-interview-problems-to-death-with-parallel-haskell/">Beating Interview Problems to Death with Parallel Haskell</a></header>
+    <div class="content-body">
+      <p>Like anyone for whom graduation is becoming more immanent, I've been
+taking a look at the latest trends in the typical technology interview
+process.  While many of the <a href="https://imranontech.com/2007/01/24/using-fizzbuzz-to-find-developers-who-grok-coding/">Fizz Buzz</a>es being thrown around
+aren't exactly exciting highlights of problem solving... well, you can
+always just beat them to death.</p>
+<p>The <a href="https://en.wikipedia.org/wiki/Run-length_encoding">Run Length Encoding</a> algorithm is a nice, compact, and
+slightly real-world interview problem that has been making the rounds
+for <a href="https://stackoverflow.com/questions/2048854/c-interview-question-run-length-coding-of-strings">years</a> now.  The basic idea being that &quot;runs&quot; of data,
+e.g. <code>aaaabbbbbbb</code>, are compressed into tuples, e.g. <code>4a7b</code>, which may
+be a smaller representation if there is a large amount of adjacent
+repeated information.  While real-world use cases for such a naïve
+compression scheme aren't abundant, the algorithm is straightforward
+and can be implemented in a dozen lines or so in most <a href="https://rosettacode.org/wiki/Run-length_encoding">languages</a>.
+If you've got regexes or similar libraries at your disposal, you can
+manage even fewer lines.  In <code>Haskell</code>'s case, one:</p>
+<pre><code class="haskell">rleMap l = map (\e -&gt; (head e, length e)) (group l)
+</code></pre>
+<p>which converts a string (or any arbitrary list of items) into a list
+of tuples, each of which has the character and its count.  The
+function has type</p>
+<pre><code class="haskell">rleMap :: (Eq a) =&gt; [a] -&gt; [(a, Int)]
+</code></pre>
+<p>Simple and easy.  But where's the fun in calling it quits now?
+Let's <a href="https://en.wikipedia.org/wiki/MapReduce">MapReduce</a> our <code>RLE</code> algorithm to make it easier to parallelize
+and potentially <a href="https://hadoop.apache.org/mapreduce/">Hadoop</a>-friendly.  We've already got our <code>map</code>
+function, so lets create a <code>reduce</code>:</p>
+<pre><code class="haskell">rleReduce :: [(Char,Int)] -&gt; [(Char,Int)] -&gt; [(Char,Int)]
+rleReduce [] [] = []
+rleReduce a  [] = a
+rleReduce [] b  = b
+rleReduce a b
+          | (fst $ last a ) == (fst $ head b) =
+                 init a ++  [(fst(last(a)),snd(last(a)) + snd(head(b)))] ++ tail b
+          | otherwise = a ++ b
+</code></pre>
+<p>This is a less common component of RLE implementations (I haven't
+spotted this particular bit of code anywhere else, so there's likely
+room for improvement), but no less straightforward: simply join two
+<code>RLE</code>'d lists together if their tail and head are not the same
+character; if they are, merge the head and tail tuple (updating the
+count) and combine the rest of the list as normal.</p>
+<p>Now, it's simply a matter of splitting the RLE target into pieces,
+<code>map</code>ing over pieces, and <code>reducing</code> them back into a cohesive
+<code>RLE</code>-encoded document:</p>
+<pre><code class="haskell">splitRLE n s = foldl rleReduce [] $ map rleMap $ chunkn n s
+</code></pre>
+<p>(<code>chunkn</code> is a simple hand-rolled routine that splits a string into
+<code>n</code> similar-sized pieces) As expected, splitting the list apart and
+recombining is needless overhead without parallelization:</p>
+<pre><code># No splitting (rleMap s)
+&gt; ghc -O2 prle --make
+&gt; /usr/bin/time -f '%E' ./prle large.txt 1&gt;/dev/null
+0:02.68
+
+# Nonparallel splitting (foldl rleReduce [] $ map rleMap $ chunkn n s)
+&gt; ghc -O2 prle --make
+&gt; /usr/bin/time -f '%E' ./prle large.txt 1&gt;/dev/null
+0:06.51
+</code></pre>
+<p>If we parallelize it using a simple <code>parMap</code>,</p>
+<pre><code class="haskell">parallelRLE n s = foldl rleReduce [] $ (parMap rdeepseq) rleMap $ chunkn n s
+</code></pre>
+<p>we might expect some improvement:</p>
+<pre><code># parallelRLE n s = foldl rleReduce [] $ (parMap rdeepseq) rleMap $ chunkn n s
+&gt; ghc -O2 prle --make -threaded -rtsopts
+
+# Parallel map 1 core
+&gt; /usr/bin/time -f '%E' ./prle large.txt +RTS -N1 1&gt;/dev/null
+0:06.31
+
+# Parallel map 2 cores
+&gt; /usr/bin/time -f '%E' ./prle large.txt +RTS -N2 1&gt;/dev/null
+0:08.50
+
+# Parallel map 4 cores
+/usr/bin/time -f '%E' ./prle large.txt +RTS -N4 1&gt;/dev/null
+0:11.00
+</code></pre>
+<p>Unfortunately, the bookkeeping and garbage collection overwhelm the
+problem very quickly, never achieving better performance.</p>
+<p>I'm running the above on a randomly-generated <code>12MB</code> text file, and no
+amount of coaxing could make the parallelized version do any better.
+While we could have written our <code>RLE</code> algorithm in plain <code>C</code> without
+much more trouble and not have encountered such performance obstacles,
+one does not <a href="https://memegenerator.net/instance/20426610">simply parallelize C</a> by swapping in a <code>parMap</code>
+either (see also: <a href="https://en.wikipedia.org/wiki/There_ain%27t_no_such_thing_as_a_free_lunch">this</a>).  Thus, we deep-dive into some <code>Haskell</code>
+optimization to get a performant version.</p>
+<p>There is one particularly painful bottleneck: <code>Haskell</code> list monads
+are not ideal for handling bulk data of the sort we need because
+<code>Haskell</code>'s <code>String</code> type is represented as a <code>[Char]</code>.  Since there's
+no reason to use a boxed linked list just to scan over characters, we
+instead turn to <code>Data.ByteString</code> for reading the input, and to
+<code>Data.Sequence</code> to handle the RLE-encoded tuples.  <code>Data.Sequence</code>
+specifically removes the large penalty when concatenating the lists
+together in the <code>reduce</code> step, as adding to either end of a <code>Seq</code> is a
+constant time operation. This is in contrast to <code>[]</code>, where only
+adding an element to a list head is constant time.  Importing these</p>
+<pre><code class="haskell">import Data.ByteString.Lazy.Char8 as BL
+       (ByteString
+       ,length
+       , take
+       , null
+       , splitAt
+       , group
+       , head
+       , pack
+       , readFile)
+import Data.Sequence as S
+</code></pre>
+<p>lets us rewrite our <code>map</code></p>
+<pre><code class="haskell">rleMap :: BL.ByteString -&gt; Seq (Char,Int)
+rleMap l = fromList $ P.zip (map BL.head c) (map (fromIntegral . BL.length) c)
+       where
+        c = BL.group $ l
+</code></pre>
+<p>and <code>reduce</code></p>
+<pre><code class="haskell">rleReduce :: Seq (Char,Int) -&gt; Seq (Char,Int) -&gt; Seq (Char,Int)
+rleReduce a b = rleReduce' (viewr a) (viewl b)
+             where
+              rleReduce' EmptyR EmptyL = S.empty
+              rleReduce' EmptyR _ = b
+              rleReduce' _ EmptyL = a
+              rleReduce' (rs :&gt; r) (l :&lt; ls)
+                         | (fst r) == (fst l) =
+                           (rs |&gt; (fst(r),snd(r) + snd(l))) &gt;&lt; ls
+                         | otherwise = a &gt;&lt; b
+</code></pre>
+<p>Optionally, <code>Data.Sequence</code> can be expressed with <code>ViewPatterns</code>.
+Rewriting with these in mind allows the new <code>reduce</code> to resemble the
+old one fairly closely:</p>
+<pre><code class="haskell">{-# LANGUAGE ViewPatterns #-}
+rleReduce (viewr -&gt; EmptyR) (viewl -&gt; EmptyL) = S.empty
+rleReduce (viewr -&gt; EmptyR) b = b
+rleReduce a (viewl -&gt; EmptyL) = a
+rleReduce a@(viewr -&gt; (rs :&gt; r)) b@(viewl -&gt; (l :&lt; ls))
+           | (fst r) == (fst l) =
+             (rs |&gt; (fst(r),snd(r) + snd(l))) &gt;&lt; ls
+           | otherwise = a &gt;&lt; b
+</code></pre>
+<p>Now we finally define a new <code>parallelRLE</code></p>
+<pre><code class="haskell">parallelRLE :: Int -&gt; BL.ByteString -&gt; Seq (Char, Int)
+parallelRLE n s = foldl rleReduce empty $ (parMap rseq) rleMap $ chunkn n s
+</code></pre>
+<p>and wrap it all up in a <code>IO</code> monad</p>
+<pre><code class="haskell">main :: IO()
+main = do
+     [fileName] &lt;- getArgs
+     s &lt;- (BL.readFile fileName)
+     print (parallelRLE (numCapabilities) s)
+</code></pre>
+<p>With an improved algorithm and <code>IO</code> wrapper, it's time for a more
+complete benchmark:</p>
+<p><a href="/img/posts/beating-interview-problems-to-death-with-parallel-haskell/prle-plot.png"><img src="/img/posts/beating-interview-problems-to-death-with-parallel-haskell/prle-plot.jpg" alt="Performance Plot" width="600" height="400" /></a></p>
+<p>This was run on a <code>0.5GB</code> file, as the smaller <code>12MB</code> file used above
+runs so fast that is essentially instant.  Between 2 and 5 processors,
+we get a nicely ramped speedup.  After 5 processors, the bookkeeping
+overhead rears its ugly head again reversing the trend, and around 48
+processors (my system maximum), the parallelization ends up running as
+slowly as the unparallelized version.  This is certainly not the end
+of possible optimizations, but we have to stop sometime.</p>
+<p>While I'm no <code>Haskell</code> expert, parallelization which costs no more
+than swapping in a <code>parMap</code> and paying homage to the Big O gods is a
+very compelling reason to hammer out any other toy interview questions
+with <code>Haskell</code> in the future.</p>
+<p>Get the code <a href="https://github.com/malloc47/snippets/tree/master/prle">here</a>.  Feedback welcome.</p>
+
+    </div>
+  </div>
+</div>
+
+
+<nav id="pagination">
+  
+  <a class="left" href="/page2/">&#8826; Newer</a>
+  
+  
+  <a class="right" href="/page4/">Older &#8827;</a>
+  
+</nav>
+
+
+      </div>
+            <footer>
+	<div class="icons">
+	  <a href="/rss.xml" class="transparent rss"></a>
+	</div>
+	<div class="footer-padding">This site is licensed under <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0</a>.</div>
+      </footer>
+
+      </div>
+  </body>
+</html>
