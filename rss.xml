@@ -6,13 +6,13 @@
     <atom:link href="https://www.malloc47.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>Blog of Jarrell Waggoner, computer scientist and software developer</description>
     <language>en-us</language>
-    <pubDate>Fri, 03 Jun 2022 15:49:12 GMT</pubDate>
-    <lastBuildDate>Fri, 03 Jun 2022 15:49:53 GMT</lastBuildDate>
+    <pubDate>Fri, 03 Jun 2022 15:52:36 GMT</pubDate>
+    <lastBuildDate>Fri, 03 Jun 2022 15:53:17 GMT</lastBuildDate>
     
     <item>
       <title>Building a Personal Dashboard in ClojureScript Part 3</title>
       <link>https://www.malloc47.com/building-a-personal-dashboard-in-clojurescript-part-3/</link>
-      <pubDate>Fri, 03 Jun 2022 15:49:12 GMT</pubDate>
+      <pubDate>Fri, 03 Jun 2022 15:52:36 GMT</pubDate>
       <author>malloc47@gmail.com (Jarrell Waggoner)</author>
       <guid isPermaLink="true">https://www.malloc47.com/building-a-personal-dashboard-in-clojurescript-part-3/</guid>
       <description>&amp;lt;p&amp;gt;My raison d&amp;apos;être for creating the wall-mounted dashboard discussed in
@@ -466,7 +466,7 @@ by battery or screen burn-in issues long-term.&amp;lt;/p&amp;gt;
     <item>
       <title>Building a Personal Dashboard in ClojureScript Part 2</title>
       <link>https://www.malloc47.com/building-a-personal-dashboard-in-clojurescript-part-2/</link>
-      <pubDate>Fri, 03 Jun 2022 15:49:12 GMT</pubDate>
+      <pubDate>Fri, 03 Jun 2022 15:52:36 GMT</pubDate>
       <author>malloc47@gmail.com (Jarrell Waggoner)</author>
       <guid isPermaLink="true">https://www.malloc47.com/building-a-personal-dashboard-in-clojurescript-part-2/</guid>
       <description>&amp;lt;p&amp;gt;Following the &amp;lt;a href=&amp;quot;/building-a-personal-dashboard-in-clojurescript&amp;quot;&amp;gt;previous installment&amp;lt;/a&amp;gt; in my series on building a
@@ -806,7 +806,7 @@ of the dashboard: the transit card.&amp;lt;/p&amp;gt;
     <item>
       <title>Building a Personal Dashboard in ClojureScript</title>
       <link>https://www.malloc47.com/building-a-personal-dashboard-in-clojurescript/</link>
-      <pubDate>Fri, 03 Jun 2022 15:49:12 GMT</pubDate>
+      <pubDate>Fri, 03 Jun 2022 15:52:36 GMT</pubDate>
       <author>malloc47@gmail.com (Jarrell Waggoner)</author>
       <guid isPermaLink="true">https://www.malloc47.com/building-a-personal-dashboard-in-clojurescript/</guid>
       <description>&amp;lt;p&amp;gt;After the 100th time checking the weather or looking up transit times
@@ -1046,7 +1046,7 @@ which involves our first external API calls.&amp;lt;/p&amp;gt;
     <item>
       <title>Migrating to NixOS</title>
       <link>https://www.malloc47.com/migrating-to-nixos/</link>
-      <pubDate>Fri, 03 Jun 2022 15:49:12 GMT</pubDate>
+      <pubDate>Fri, 03 Jun 2022 15:52:36 GMT</pubDate>
       <author>malloc47@gmail.com (Jarrell Waggoner)</author>
       <guid isPermaLink="true">https://www.malloc47.com/migrating-to-nixos/</guid>
       <description>&amp;lt;p&amp;gt;After running &amp;lt;a href=&amp;quot;https://www.archlinux.org/&amp;quot;&amp;gt;Arch Linux&amp;lt;/a&amp;gt; for the last decade, I&amp;apos;ve finally made
@@ -1466,7 +1466,7 @@ just boot back into the previous generation.&amp;lt;/p&amp;gt;
     <item>
       <title>Jetty JMX in Clojure</title>
       <link>https://www.malloc47.com/jetty-jmx-in-clojure/</link>
-      <pubDate>Fri, 03 Jun 2022 15:49:12 GMT</pubDate>
+      <pubDate>Fri, 03 Jun 2022 15:52:36 GMT</pubDate>
       <author>malloc47@gmail.com (Jarrell Waggoner)</author>
       <guid isPermaLink="true">https://www.malloc47.com/jetty-jmx-in-clojure/</guid>
       <description>&amp;lt;p&amp;gt;Embedded Jetty is one of the more popular servers for ring
@@ -1533,7 +1533,7 @@ connect to the JMX port using &amp;lt;code&amp;gt;jconsole&amp;lt;/code&amp;gt;:
     <item>
       <title>10,000 Commits</title>
       <link>https://www.malloc47.com/10000-commits/</link>
-      <pubDate>Fri, 03 Jun 2022 15:49:12 GMT</pubDate>
+      <pubDate>Fri, 03 Jun 2022 15:52:36 GMT</pubDate>
       <author>malloc47@gmail.com (Jarrell Waggoner)</author>
       <guid isPermaLink="true">https://www.malloc47.com/10000-commits/</guid>
       <description>&amp;lt;p&amp;gt;Since finishing my dissertation, I decided to gather some metrics
@@ -1577,7 +1577,7 @@ like to think engineers might be too.&amp;lt;/p&amp;gt;
     <item>
       <title>LaTeX Snippet: (Literal) One Liners</title>
       <link>https://www.malloc47.com/latex-snippet-literal-one-liners/</link>
-      <pubDate>Fri, 03 Jun 2022 15:49:12 GMT</pubDate>
+      <pubDate>Fri, 03 Jun 2022 15:52:36 GMT</pubDate>
       <author>malloc47@gmail.com (Jarrell Waggoner)</author>
       <guid isPermaLink="true">https://www.malloc47.com/latex-snippet-literal-one-liners/</guid>
       <description>&amp;lt;p&amp;gt;There are some truly &amp;lt;a href=&amp;quot;https://tex.stackexchange.com/questions/33417/adjust-font-size-on-the-fly&amp;quot;&amp;gt;impressive&amp;lt;/a&amp;gt; LaTeX solutions for doing
@@ -1630,7 +1630,7 @@ the longer line will be stretched horizontally to fit in the available space.&am
     <item>
       <title>Tech Company Locations (North America)</title>
       <link>https://www.malloc47.com/tech-company-locations/</link>
-      <pubDate>Fri, 03 Jun 2022 15:49:12 GMT</pubDate>
+      <pubDate>Fri, 03 Jun 2022 15:52:36 GMT</pubDate>
       <author>malloc47@gmail.com (Jarrell Waggoner)</author>
       <guid isPermaLink="true">https://www.malloc47.com/tech-company-locations/</guid>
       <description>&amp;lt;p&amp;gt;Since I&amp;apos;m soon to be on the technology job market, I decided to get
@@ -1664,7 +1664,7 @@ style=&amp;quot;color:#0000FF;text-align:left&amp;quot;&amp;gt;Google Maps&amp;l
     <item>
       <title>Laptops are the Stenotypes of Software Engineers</title>
       <link>https://www.malloc47.com/laptops-are-the-stenotypes-of-software-engineers/</link>
-      <pubDate>Fri, 03 Jun 2022 15:49:12 GMT</pubDate>
+      <pubDate>Fri, 03 Jun 2022 15:52:36 GMT</pubDate>
       <author>malloc47@gmail.com (Jarrell Waggoner)</author>
       <guid isPermaLink="true">https://www.malloc47.com/laptops-are-the-stenotypes-of-software-engineers/</guid>
       <description>&amp;lt;p&amp;gt;Increasingly, I&amp;apos;ve been asked variants on the question &amp;amp;quot;what will
@@ -1766,7 +1766,7 @@ an open-source stenotype software package.]&amp;lt;/p&amp;gt;
     <item>
       <title>Producing LaTeX from NumPy Arrays</title>
       <link>https://www.malloc47.com/producing-latex-from-numpy-arrays/</link>
-      <pubDate>Fri, 03 Jun 2022 15:49:12 GMT</pubDate>
+      <pubDate>Fri, 03 Jun 2022 15:52:36 GMT</pubDate>
       <author>malloc47@gmail.com (Jarrell Waggoner)</author>
       <guid isPermaLink="true">https://www.malloc47.com/producing-latex-from-numpy-arrays/</guid>
       <description>&amp;lt;p&amp;gt;For my comprehensive exam, I needed to quickly convert some NumPy
@@ -1810,7 +1810,7 @@ are centered, etc.).  A gist of the function is available &amp;lt;a href=&amp;qu
     <item>
       <title>pythonbrew+opencv+debian</title>
       <link>https://www.malloc47.com/pythonbrew-opencv-debian/</link>
-      <pubDate>Fri, 03 Jun 2022 15:49:12 GMT</pubDate>
+      <pubDate>Fri, 03 Jun 2022 15:52:36 GMT</pubDate>
       <author>malloc47@gmail.com (Jarrell Waggoner)</author>
       <guid isPermaLink="true">https://www.malloc47.com/pythonbrew-opencv-debian/</guid>
       <description>&amp;lt;p&amp;gt;There are a number of ways to go about building a modern development
@@ -1920,7 +1920,7 @@ make install
     <item>
       <title>Anatomy of a Chrome Extension</title>
       <link>https://www.malloc47.com/anatomy-of-a-chrome-extension/</link>
-      <pubDate>Fri, 03 Jun 2022 15:49:12 GMT</pubDate>
+      <pubDate>Fri, 03 Jun 2022 15:52:36 GMT</pubDate>
       <author>malloc47@gmail.com (Jarrell Waggoner)</author>
       <guid isPermaLink="true">https://www.malloc47.com/anatomy-of-a-chrome-extension/</guid>
       <description>&amp;lt;p&amp;gt;I launched &amp;lt;a href=&amp;quot;http://nonpartisan.me&amp;quot;&amp;gt;nonpartisan.me&amp;lt;/a&amp;gt; a few weeks back, which exists
@@ -2113,7 +2113,7 @@ have.&amp;lt;/p&amp;gt;
     <item>
       <title>Poor Man&#39;s LDAP</title>
       <link>https://www.malloc47.com/poor-mans-ldap/</link>
-      <pubDate>Fri, 03 Jun 2022 15:49:12 GMT</pubDate>
+      <pubDate>Fri, 03 Jun 2022 15:52:36 GMT</pubDate>
       <author>malloc47@gmail.com (Jarrell Waggoner)</author>
       <guid isPermaLink="true">https://www.malloc47.com/poor-mans-ldap/</guid>
       <description>&amp;lt;p&amp;gt;In addition to being a researcher and backend web developer, I&amp;apos;ve also
@@ -2184,7 +2184,7 @@ to anyone in a similar situation.&amp;lt;/p&amp;gt;
     <item>
       <title>Git Dotfile Versioning Across Systems</title>
       <link>https://www.malloc47.com/git-dotfile-versioning-across-systems/</link>
-      <pubDate>Fri, 03 Jun 2022 15:49:12 GMT</pubDate>
+      <pubDate>Fri, 03 Jun 2022 15:52:36 GMT</pubDate>
       <author>malloc47@gmail.com (Jarrell Waggoner)</author>
       <guid isPermaLink="true">https://www.malloc47.com/git-dotfile-versioning-across-systems/</guid>
       <description>&amp;lt;p&amp;gt;For users of unix-like operating systems, treating your dotfiles like
@@ -2288,7 +2288,7 @@ dotfile repo &amp;lt;a href=&amp;quot;https://github.com/malloc47/config/blob/ma
     <item>
       <title>Beating Interview Problems to Death with Parallel Haskell</title>
       <link>https://www.malloc47.com/beating-interview-problems-to-death-with-parallel-haskell/</link>
-      <pubDate>Fri, 03 Jun 2022 15:49:12 GMT</pubDate>
+      <pubDate>Fri, 03 Jun 2022 15:52:36 GMT</pubDate>
       <author>malloc47@gmail.com (Jarrell Waggoner)</author>
       <guid isPermaLink="true">https://www.malloc47.com/beating-interview-problems-to-death-with-parallel-haskell/</guid>
       <description>&amp;lt;p&amp;gt;Like anyone for whom graduation is becoming more immanent, I&amp;apos;ve been
@@ -2462,7 +2462,7 @@ with &amp;lt;code&amp;gt;Haskell&amp;lt;/code&amp;gt; in the future.&amp;lt;/p&a
     <item>
       <title>Google Completion in Emacs</title>
       <link>https://www.malloc47.com/google-completion-in-emacs/</link>
-      <pubDate>Fri, 03 Jun 2022 15:49:12 GMT</pubDate>
+      <pubDate>Fri, 03 Jun 2022 15:52:36 GMT</pubDate>
       <author>malloc47@gmail.com (Jarrell Waggoner)</author>
       <guid isPermaLink="true">https://www.malloc47.com/google-completion-in-emacs/</guid>
       <description>&amp;lt;p&amp;gt;While many an &amp;lt;code&amp;gt;emacs&amp;lt;/code&amp;gt; include &amp;lt;code&amp;gt;dabbrev-expand&amp;lt;/code&amp;gt; for within-buffer
@@ -2534,7 +2534,7 @@ for, after all.&amp;lt;/p&amp;gt;
     <item>
       <title>Preprocessors and Graphviz</title>
       <link>https://www.malloc47.com/preprocessors-and-graphviz/</link>
-      <pubDate>Fri, 03 Jun 2022 15:49:12 GMT</pubDate>
+      <pubDate>Fri, 03 Jun 2022 15:52:36 GMT</pubDate>
       <author>malloc47@gmail.com (Jarrell Waggoner)</author>
       <guid isPermaLink="true">https://www.malloc47.com/preprocessors-and-graphviz/</guid>
       <description>&amp;lt;p&amp;gt;&amp;lt;code&amp;gt;Graphviz&amp;lt;/code&amp;gt; is a useful toolset for describing and rendering graphs.
@@ -2629,7 +2629,7 @@ in other languages.&amp;lt;/p&amp;gt;
     <item>
       <title>QR Codes En Masse</title>
       <link>https://www.malloc47.com/qr-codes-en-masse/</link>
-      <pubDate>Fri, 03 Jun 2022 15:49:12 GMT</pubDate>
+      <pubDate>Fri, 03 Jun 2022 15:52:36 GMT</pubDate>
       <author>malloc47@gmail.com (Jarrell Waggoner)</author>
       <guid isPermaLink="true">https://www.malloc47.com/qr-codes-en-masse/</guid>
       <description>&amp;lt;p&amp;gt;For the upcoming &amp;lt;a href=&amp;quot;https://www.posscon.org/&amp;quot;&amp;gt;POSSCON&amp;lt;/a&amp;gt; here in Columbia, we had need of QR
@@ -2712,7 +2712,7 @@ copy &amp;amp;amp; pasting in and out of a browser.&amp;lt;/p&amp;gt;
     <item>
       <title>Flirting with the Front End</title>
       <link>https://www.malloc47.com/flirting-with-the-front-end/</link>
-      <pubDate>Fri, 03 Jun 2022 15:49:12 GMT</pubDate>
+      <pubDate>Fri, 03 Jun 2022 15:52:36 GMT</pubDate>
       <author>malloc47@gmail.com (Jarrell Waggoner)</author>
       <guid isPermaLink="true">https://www.malloc47.com/flirting-with-the-front-end/</guid>
       <description>&amp;lt;p&amp;gt;Every few years, when I&amp;apos;m not teaching introductory web programming, I
@@ -2779,7 +2779,7 @@ to the clock.&amp;lt;/p&amp;gt;
     <item>
       <title>Jedi Knight: Dark Forces II -- A coding retrospective</title>
       <link>https://www.malloc47.com/jedi-knight-dark-forces-ii-a-coding-retrospective/</link>
-      <pubDate>Fri, 03 Jun 2022 15:49:12 GMT</pubDate>
+      <pubDate>Fri, 03 Jun 2022 15:52:36 GMT</pubDate>
       <author>malloc47@gmail.com (Jarrell Waggoner)</author>
       <guid isPermaLink="true">https://www.malloc47.com/jedi-knight-dark-forces-ii-a-coding-retrospective/</guid>
       <description>&amp;lt;p&amp;gt;Years ago, before I got my hands on a real compiler, I satisfied my
@@ -2936,7 +2936,7 @@ ecosystem. It was an IDE. And it was fun.&amp;lt;/p&amp;gt;
     <item>
       <title>Import Links into Google Plus as +1s</title>
       <link>https://www.malloc47.com/import-links-into-google-plus-as-1s/</link>
-      <pubDate>Fri, 03 Jun 2022 15:49:12 GMT</pubDate>
+      <pubDate>Fri, 03 Jun 2022 15:52:36 GMT</pubDate>
       <author>malloc47@gmail.com (Jarrell Waggoner)</author>
       <guid isPermaLink="true">https://www.malloc47.com/import-links-into-google-plus-as-1s/</guid>
       <description>&amp;lt;p&amp;gt;I&amp;apos;ve been accumulating helpful and interesting articles for a number
@@ -2983,7 +2983,7 @@ your links will be +1&amp;apos;d accordingly.&amp;lt;/p&amp;gt;
     <item>
       <title>Man Page Readability</title>
       <link>https://www.malloc47.com/man-page-readability/</link>
-      <pubDate>Fri, 03 Jun 2022 15:49:12 GMT</pubDate>
+      <pubDate>Fri, 03 Jun 2022 15:52:36 GMT</pubDate>
       <author>malloc47@gmail.com (Jarrell Waggoner)</author>
       <guid isPermaLink="true">https://www.malloc47.com/man-page-readability/</guid>
       <description>&amp;lt;p&amp;gt;Man pages are one of the staples of a healthy *nix diet, but having
@@ -3042,7 +3042,7 @@ of younger and less experienced users.&amp;lt;/p&amp;gt;
     <item>
       <title>vim -&gt; emacs</title>
       <link>https://www.malloc47.com/vim-to-emacs/</link>
-      <pubDate>Fri, 03 Jun 2022 15:49:12 GMT</pubDate>
+      <pubDate>Fri, 03 Jun 2022 15:52:36 GMT</pubDate>
       <author>malloc47@gmail.com (Jarrell Waggoner)</author>
       <guid isPermaLink="true">https://www.malloc47.com/vim-to-emacs/</guid>
       <description>&amp;lt;p&amp;gt;After having grown up in the terminal with vim at my side, I&amp;apos;ve been transitioning to back to emacs. There&amp;apos;s no shortage of guides for making the leap, but there&amp;apos;s a number of features in vim that operate very differently in emacs, or do not map cleanly to a single feature. There&amp;apos;s nothing like not knowing how to get that &amp;lt;em&amp;gt;one&amp;lt;/em&amp;gt; feature you rely on when making the vim-&amp;amp;gt;emacs leap to make you want to run back to familiar territory. Here&amp;apos;s a few of the discoveries I&amp;apos;ve made along the way.&amp;lt;/p&amp;gt;
