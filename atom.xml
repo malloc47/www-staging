@@ -3,7 +3,7 @@
   <title>malloc47</title>
   <link href="https://www.malloc47.com"/>
   <link type="application/atom+xml" rel="self" href="https://www.malloc47.com/atom.xml"/>
-  <updated>2022-06-03T15:52:36Z</updated>
+  <updated>2022-06-03T16:14:17Z</updated>
   <id>https://www.malloc47.com/</id>
   <author>
     <name>Jarrell Waggoner</name>
@@ -14,7 +14,7 @@
     <id>https://www.malloc47.com/building-a-personal-dashboard-in-clojurescript-part-3/</id>
     <link type="text/html" rel="alternate" href="https://www.malloc47.com/building-a-personal-dashboard-in-clojurescript-part-3/"/>
     <title>Building a Personal Dashboard in ClojureScript Part 3</title>
-    <updated>2022-06-03T15:52:36Z</updated>
+    <updated>2022-06-03T16:14:17Z</updated>
     <author>
       <name>Jarrell Waggoner</name>
     </author>
@@ -470,7 +470,7 @@ by battery or screen burn-in issues long-term.&amp;lt;/p&amp;gt;
     <id>https://www.malloc47.com/building-a-personal-dashboard-in-clojurescript-part-2/</id>
     <link type="text/html" rel="alternate" href="https://www.malloc47.com/building-a-personal-dashboard-in-clojurescript-part-2/"/>
     <title>Building a Personal Dashboard in ClojureScript Part 2</title>
-    <updated>2022-06-03T15:52:36Z</updated>
+    <updated>2022-06-03T16:14:17Z</updated>
     <author>
       <name>Jarrell Waggoner</name>
     </author>
@@ -812,7 +812,7 @@ of the dashboard: the transit card.&amp;lt;/p&amp;gt;
     <id>https://www.malloc47.com/building-a-personal-dashboard-in-clojurescript/</id>
     <link type="text/html" rel="alternate" href="https://www.malloc47.com/building-a-personal-dashboard-in-clojurescript/"/>
     <title>Building a Personal Dashboard in ClojureScript</title>
-    <updated>2022-06-03T15:52:36Z</updated>
+    <updated>2022-06-03T16:14:17Z</updated>
     <author>
       <name>Jarrell Waggoner</name>
     </author>
@@ -1054,7 +1054,7 @@ which involves our first external API calls.&amp;lt;/p&amp;gt;
     <id>https://www.malloc47.com/migrating-to-nixos/</id>
     <link type="text/html" rel="alternate" href="https://www.malloc47.com/migrating-to-nixos/"/>
     <title>Migrating to NixOS</title>
-    <updated>2022-06-03T15:52:36Z</updated>
+    <updated>2022-06-03T16:14:17Z</updated>
     <author>
       <name>Jarrell Waggoner</name>
     </author>
@@ -1476,7 +1476,7 @@ just boot back into the previous generation.&amp;lt;/p&amp;gt;
     <id>https://www.malloc47.com/jetty-jmx-in-clojure/</id>
     <link type="text/html" rel="alternate" href="https://www.malloc47.com/jetty-jmx-in-clojure/"/>
     <title>Jetty JMX in Clojure</title>
-    <updated>2022-06-03T15:52:36Z</updated>
+    <updated>2022-06-03T16:14:17Z</updated>
     <author>
       <name>Jarrell Waggoner</name>
     </author>
@@ -1545,7 +1545,7 @@ connect to the JMX port using &amp;lt;code&amp;gt;jconsole&amp;lt;/code&amp;gt;:
     <id>https://www.malloc47.com/10000-commits/</id>
     <link type="text/html" rel="alternate" href="https://www.malloc47.com/10000-commits/"/>
     <title>10,000 Commits</title>
-    <updated>2022-06-03T15:52:36Z</updated>
+    <updated>2022-06-03T16:14:17Z</updated>
     <author>
       <name>Jarrell Waggoner</name>
     </author>
@@ -1591,7 +1591,7 @@ like to think engineers might be too.&amp;lt;/p&amp;gt;
     <id>https://www.malloc47.com/latex-snippet-literal-one-liners/</id>
     <link type="text/html" rel="alternate" href="https://www.malloc47.com/latex-snippet-literal-one-liners/"/>
     <title>LaTeX Snippet: (Literal) One Liners</title>
-    <updated>2022-06-03T15:52:36Z</updated>
+    <updated>2022-06-03T16:14:17Z</updated>
     <author>
       <name>Jarrell Waggoner</name>
     </author>
@@ -1646,7 +1646,7 @@ the longer line will be stretched horizontally to fit in the available space.&am
     <id>https://www.malloc47.com/tech-company-locations/</id>
     <link type="text/html" rel="alternate" href="https://www.malloc47.com/tech-company-locations/"/>
     <title>Tech Company Locations (North America)</title>
-    <updated>2022-06-03T15:52:36Z</updated>
+    <updated>2022-06-03T16:14:17Z</updated>
     <author>
       <name>Jarrell Waggoner</name>
     </author>
@@ -1682,7 +1682,7 @@ style=&amp;quot;color:#0000FF;text-align:left&amp;quot;&amp;gt;Google Maps&amp;l
     <id>https://www.malloc47.com/laptops-are-the-stenotypes-of-software-engineers/</id>
     <link type="text/html" rel="alternate" href="https://www.malloc47.com/laptops-are-the-stenotypes-of-software-engineers/"/>
     <title>Laptops are the Stenotypes of Software Engineers</title>
-    <updated>2022-06-03T15:52:36Z</updated>
+    <updated>2022-06-03T16:14:17Z</updated>
     <author>
       <name>Jarrell Waggoner</name>
     </author>
@@ -1786,7 +1786,7 @@ an open-source stenotype software package.]&amp;lt;/p&amp;gt;
     <id>https://www.malloc47.com/producing-latex-from-numpy-arrays/</id>
     <link type="text/html" rel="alternate" href="https://www.malloc47.com/producing-latex-from-numpy-arrays/"/>
     <title>Producing LaTeX from NumPy Arrays</title>
-    <updated>2022-06-03T15:52:36Z</updated>
+    <updated>2022-06-03T16:14:17Z</updated>
     <author>
       <name>Jarrell Waggoner</name>
     </author>
@@ -1832,7 +1832,7 @@ are centered, etc.).  A gist of the function is available &amp;lt;a href=&amp;qu
     <id>https://www.malloc47.com/pythonbrew-opencv-debian/</id>
     <link type="text/html" rel="alternate" href="https://www.malloc47.com/pythonbrew-opencv-debian/"/>
     <title>pythonbrew+opencv+debian</title>
-    <updated>2022-06-03T15:52:36Z</updated>
+    <updated>2022-06-03T16:14:17Z</updated>
     <author>
       <name>Jarrell Waggoner</name>
     </author>
@@ -1944,7 +1944,7 @@ make install
     <id>https://www.malloc47.com/anatomy-of-a-chrome-extension/</id>
     <link type="text/html" rel="alternate" href="https://www.malloc47.com/anatomy-of-a-chrome-extension/"/>
     <title>Anatomy of a Chrome Extension</title>
-    <updated>2022-06-03T15:52:36Z</updated>
+    <updated>2022-06-03T16:14:17Z</updated>
     <author>
       <name>Jarrell Waggoner</name>
     </author>
@@ -2139,7 +2139,7 @@ have.&amp;lt;/p&amp;gt;
     <id>https://www.malloc47.com/poor-mans-ldap/</id>
     <link type="text/html" rel="alternate" href="https://www.malloc47.com/poor-mans-ldap/"/>
     <title>Poor Man&#39;s LDAP</title>
-    <updated>2022-06-03T15:52:36Z</updated>
+    <updated>2022-06-03T16:14:17Z</updated>
     <author>
       <name>Jarrell Waggoner</name>
     </author>
@@ -2212,7 +2212,7 @@ to anyone in a similar situation.&amp;lt;/p&amp;gt;
     <id>https://www.malloc47.com/git-dotfile-versioning-across-systems/</id>
     <link type="text/html" rel="alternate" href="https://www.malloc47.com/git-dotfile-versioning-across-systems/"/>
     <title>Git Dotfile Versioning Across Systems</title>
-    <updated>2022-06-03T15:52:36Z</updated>
+    <updated>2022-06-03T16:14:17Z</updated>
     <author>
       <name>Jarrell Waggoner</name>
     </author>
@@ -2318,7 +2318,7 @@ dotfile repo &amp;lt;a href=&amp;quot;https://github.com/malloc47/config/blob/ma
     <id>https://www.malloc47.com/beating-interview-problems-to-death-with-parallel-haskell/</id>
     <link type="text/html" rel="alternate" href="https://www.malloc47.com/beating-interview-problems-to-death-with-parallel-haskell/"/>
     <title>Beating Interview Problems to Death with Parallel Haskell</title>
-    <updated>2022-06-03T15:52:36Z</updated>
+    <updated>2022-06-03T16:14:17Z</updated>
     <author>
       <name>Jarrell Waggoner</name>
     </author>
@@ -2494,7 +2494,7 @@ with &amp;lt;code&amp;gt;Haskell&amp;lt;/code&amp;gt; in the future.&amp;lt;/p&a
     <id>https://www.malloc47.com/google-completion-in-emacs/</id>
     <link type="text/html" rel="alternate" href="https://www.malloc47.com/google-completion-in-emacs/"/>
     <title>Google Completion in Emacs</title>
-    <updated>2022-06-03T15:52:36Z</updated>
+    <updated>2022-06-03T16:14:17Z</updated>
     <author>
       <name>Jarrell Waggoner</name>
     </author>
@@ -2568,7 +2568,7 @@ for, after all.&amp;lt;/p&amp;gt;
     <id>https://www.malloc47.com/preprocessors-and-graphviz/</id>
     <link type="text/html" rel="alternate" href="https://www.malloc47.com/preprocessors-and-graphviz/"/>
     <title>Preprocessors and Graphviz</title>
-    <updated>2022-06-03T15:52:36Z</updated>
+    <updated>2022-06-03T16:14:17Z</updated>
     <author>
       <name>Jarrell Waggoner</name>
     </author>
@@ -2665,7 +2665,7 @@ in other languages.&amp;lt;/p&amp;gt;
     <id>https://www.malloc47.com/qr-codes-en-masse/</id>
     <link type="text/html" rel="alternate" href="https://www.malloc47.com/qr-codes-en-masse/"/>
     <title>QR Codes En Masse</title>
-    <updated>2022-06-03T15:52:36Z</updated>
+    <updated>2022-06-03T16:14:17Z</updated>
     <author>
       <name>Jarrell Waggoner</name>
     </author>
@@ -2750,7 +2750,7 @@ copy &amp;amp;amp; pasting in and out of a browser.&amp;lt;/p&amp;gt;
     <id>https://www.malloc47.com/flirting-with-the-front-end/</id>
     <link type="text/html" rel="alternate" href="https://www.malloc47.com/flirting-with-the-front-end/"/>
     <title>Flirting with the Front End</title>
-    <updated>2022-06-03T15:52:36Z</updated>
+    <updated>2022-06-03T16:14:17Z</updated>
     <author>
       <name>Jarrell Waggoner</name>
     </author>
@@ -2819,7 +2819,7 @@ to the clock.&amp;lt;/p&amp;gt;
     <id>https://www.malloc47.com/jedi-knight-dark-forces-ii-a-coding-retrospective/</id>
     <link type="text/html" rel="alternate" href="https://www.malloc47.com/jedi-knight-dark-forces-ii-a-coding-retrospective/"/>
     <title>Jedi Knight: Dark Forces II -- A coding retrospective</title>
-    <updated>2022-06-03T15:52:36Z</updated>
+    <updated>2022-06-03T16:14:17Z</updated>
     <author>
       <name>Jarrell Waggoner</name>
     </author>
@@ -2978,7 +2978,7 @@ ecosystem. It was an IDE. And it was fun.&amp;lt;/p&amp;gt;
     <id>https://www.malloc47.com/import-links-into-google-plus-as-1s/</id>
     <link type="text/html" rel="alternate" href="https://www.malloc47.com/import-links-into-google-plus-as-1s/"/>
     <title>Import Links into Google Plus as +1s</title>
-    <updated>2022-06-03T15:52:36Z</updated>
+    <updated>2022-06-03T16:14:17Z</updated>
     <author>
       <name>Jarrell Waggoner</name>
     </author>
@@ -3027,7 +3027,7 @@ your links will be +1&amp;apos;d accordingly.&amp;lt;/p&amp;gt;
     <id>https://www.malloc47.com/man-page-readability/</id>
     <link type="text/html" rel="alternate" href="https://www.malloc47.com/man-page-readability/"/>
     <title>Man Page Readability</title>
-    <updated>2022-06-03T15:52:36Z</updated>
+    <updated>2022-06-03T16:14:17Z</updated>
     <author>
       <name>Jarrell Waggoner</name>
     </author>
@@ -3088,7 +3088,7 @@ of younger and less experienced users.&amp;lt;/p&amp;gt;
     <id>https://www.malloc47.com/vim-to-emacs/</id>
     <link type="text/html" rel="alternate" href="https://www.malloc47.com/vim-to-emacs/"/>
     <title>vim -&gt; emacs</title>
-    <updated>2022-06-03T15:52:36Z</updated>
+    <updated>2022-06-03T16:14:17Z</updated>
     <author>
       <name>Jarrell Waggoner</name>
     </author>
